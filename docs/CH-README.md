@@ -1,4 +1,4 @@
-#CostPilot
+# CostPilot
 
 语言(language)
 ----
@@ -60,15 +60,16 @@ CostPilot 是星汉未来基于先进的 FinOps 理念开发的一站式全场�
       docker run --mount type=bind,source=/tmp/config.yaml,target=/home/tiger/app/conf/config.yaml -p 8504:8504 --name=costpilot galaxy-future/costpilot
       ```
 #### 4. 效果展示
+![costanalysis](https://user-images.githubusercontent.com/87166597/195545060-a341307d-6dca-45f9-8f26-38a484073f5d.jpg)
 
 行为准则
 ------
-[贡献者公约](https://github.com/galaxy-future/costpilot/blob/master/CODE_OF_CONDUCT)
+[贡献者公约](https://github.com/galaxy-future/costpilot/blob/dev/CODE_OF_CONDUCT)
 
 授权
 -----
 
-CostPilot uses [Apache License 2.0](https://github.com/galaxy-future/costpilot/blob/master/LICENSE) licensing agreement for authorization
+CostPilot uses [Apache License 2.0](https://github.com/galaxy-future/costpilot/blob/dev/LICENSE) licensing agreement for authorization
 
 联系我们
 -----
@@ -77,5 +78,6 @@ CostPilot uses [Apache License 2.0](https://github.com/galaxy-future/costpilot/b
 | [WeChat Official Account](https://github.com/galaxy-future/comandx/blob/main/docs/resource/wechat_official_account.md)
 
 扫描下方二维码添加官方助手，入群了解更多开源信息：
+
 ![image](https://user-images.githubusercontent.com/102009012/163559389-813afa06-924f-412d-8642-1a0944384f91.png)
 
