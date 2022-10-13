@@ -7,19 +7,16 @@
 
 简介
 -----
-CostPilot 是星汉未来基于先进的 FinOps 理念开发的一站式全场景云上 IT 成本管理平台， 通过对成本的深入洞察，快速生成成本报告，并从多种角度提供定制化成本优化建议， 以及一体化的优化功能，助力企业IT成本优化高达 50%。
+CostPilot 是星汉未来基于先进的 FinOps 理念开发的一站式全场景云上 IT 成本管理平台， 通过对成本的深入洞察，快速生成成本报告，并从多种角度提供定制化成本优化建议， 以及一体化的优化功能，助力企业 IT 成本优化高达 50%。
 
 上手指南
 ----
 #### 1. 配置要求
-
 为了软件稳定运行，建议系统型号2核4G内存；CostPilot 已经在 Linux 系统以及 MacOS 系统进行了运行和测试。
-
 
 
 #### 2. 通过源代码执行
 通过源代码执行 CostPilot 分析, 需确保已安装 Git ( [Git - Downloads](https://git-scm.com/downloads)) 和 Go (**1.17版本及以上**) 并完成对应环境配置.
-
 * (1) 下载源代码
     ```shell
     git clone https://github.com/galaxy-future/costpilot.git
@@ -59,6 +56,7 @@ CostPilot 是星汉未来基于先进的 FinOps 理念开发的一站式全场�
       ```shell
       docker run --mount type=bind,source=/tmp/config.yaml,target=/home/tiger/app/conf/config.yaml -p 8504:8504 --name=costpilot galaxy-future/costpilot
       ```
+
 #### 4. 效果展示
 ![costanalysis](https://user-images.githubusercontent.com/87166597/195545060-a341307d-6dca-45f9-8f26-38a484073f5d.jpg)
 
