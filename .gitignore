@@ -1,0 +1,4 @@
+*.log
+output/
+.idea
+*.local

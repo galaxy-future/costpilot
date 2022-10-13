@@ -1,0 +1,6 @@
+cloud_accounts:
+  - provider:  # required :AlibabaCloud
+    ak:  # required
+    sk:  # required
+    region_id:  # required
+    name:  # not required
