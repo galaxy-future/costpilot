@@ -8,7 +8,7 @@ English | [中文](https://github.com/galaxy-future/costpilot/blob/dev/docs/CH-R
 
 Introduction
 -----
-CostPilot is an all-in-one cloud cost management platform that applies to applications hosted on all cloud platforms. Developed by Galaxy-Future based on the FinOps discipline, CostPilot helps enterprises cut cloud spending by up to 50%. This platform provides deep insights into your cloud cost, periodic reports that contain both cloud cost data and custom cost optimization suggestions from multiple perspectives, and even state-of-the-art techniques that you can use to efficiently optimize cloud usage.
+CostPilot is an all-in-one cloud cost management platform that applies to applications hosted on all cloud platforms. Developed by Galaxy-Future based on the FinOps discipline, CostPilot helps enterprises cut cloud spending by up to 50%. This platform provides deep insights into your cloud cost, periodic reports that contain both cloud cost data and professional cost optimization suggestions from multiple perspectives, and even state-of-the-art techniques that you can use to efficiently optimize cloud usage.
 
 Getting Started Guide
 ----
