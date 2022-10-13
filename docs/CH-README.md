@@ -12,8 +12,8 @@ CostPilot 是星汉未来基于先进的 FinOps 理念开发的一站式全场�
 上手指南
 ----
 #### 1. 配置要求
-为了软件稳定运行，建议系统型号2核4G内存；CostPilot 已经在 Linux 系统以及 MacOS 系统进行了运行和测试。
-
+- 为了软件稳定运行，建议系统型号2核4G内存；CostPilot 已经在 Linux 系统以及 MacOS 系统进行了运行和测试。
+- 运行中使用的 AK/SK 需具备对应云账户的账单(费用)读取权限。
 
 #### 2. 通过源代码执行
 通过源代码执行 CostPilot 分析, 需确保已安装 Git ( [Git - Downloads](https://git-scm.com/downloads)) 和 Go (**1.17版本及以上**) 并完成对应环境配置.
