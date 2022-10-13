@@ -46,7 +46,7 @@ CostPilot 是星汉未来基于先进的 FinOps 理念开发的一站式全场�
     - 分析完成后, 在浏览器中打开 website/index.html 查看分析结果.
 
 #### 3. 通过 Docker 执行
-通过 docker 执行 CostPilo 分析, 需确保已安装 Docker (参考
+通过 docker 执行 CostPilot 分析, 需确保已安装 Docker (参考
 [Docker Engine Install](https://docs.docker.com/engine/install/)).
 
 * (1) 通过环境变量的方式运行 (此方式仅支持并行分析一个云账户)
