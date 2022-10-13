@@ -14,7 +14,7 @@ Getting Started Guide
 ----
 #### 1. Configuration Requirements
 
-- To ensure stable operation of the system, we recommend that you use a server with at least 2 CPU cores and 4GB RAM. For Linux and MacOS systems, CostPilot has already been tested.
+- To ensure stable operation of the system, we recommend that you use a server with at least 2 CPU cores and 4 GB RAM. For Linux and MacOS systems, CostPilot has already been tested.
 - The AK/SK used in operation needs to have the permission to read the bill (charge) of the corresponding cloud account.
 
 #### 2. Run in Source Code
