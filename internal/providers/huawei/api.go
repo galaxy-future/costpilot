@@ -93,7 +93,7 @@ func convQueryAccountBill(response *model.ListCustomerselfResourceRecordsRespons
 			BillingDate:      *v.BillDate, // has date when Granularity=DAILY
 			SubscriptionType: convSubscriptionType(*v.ResourceTypeName),
 			Currency:         currency,
-			PretaxAmount:     *v.,
+			PretaxAmount:     *v.Amount,
 		}
 		result = append(result, item)
 	}
