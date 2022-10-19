@@ -35,7 +35,7 @@ func (*HuaweiCloud) ProviderType() string {
 
 // QueryAccountBill
 func (p *HuaweiCloud) QueryAccountBill(ctx context.Context, param types.QueryAccountBillRequest) (types.DataInQueryAccountBill, error) {
-	var _ error
+	var err error
 	billItems := make([]types.AccountBillItem, 0)
 	request := &model.ListCustomerselfResourceRecordsRequest{}
 	request.Cycle = param.BillingCycle
@@ -45,10 +45,9 @@ func (p *HuaweiCloud) QueryAccountBill(ctx context.Context, param types.QueryAcc
 	request.Limit = &limitRequest
 
 	pageNum := int32(0)
-
 	response := new(model.ListCustomerselfResourceRecordsResponse)
 	for {
-		response, err := p.bssClientOpt.ListCustomerselfResourceRecords(request)
+		response, err = p.bssClientOpt.ListCustomerselfResourceRecords(request)
 
 		if err != nil {
 			return types.DataInQueryAccountBill{}, err
