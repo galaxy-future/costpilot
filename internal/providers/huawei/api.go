@@ -85,7 +85,9 @@ func convQueryAccountBill(response *model.ListCustomerselfResourceRecordsRespons
 	feeRecords := *response.FeeRecords
 	result := make([]types.AccountBillItem, 0, len(feeRecords))
 	for _, v := range feeRecords {
-		standardPipCode := convPipCode(*v.CloudServiceTypeName)
+		// 类型这里需要匹配，在寻找接口
+		//standardPipCode := convPipCode(*v.CloudServiceTypeName)
+		standardPipCode := types.ECS
 		item := types.AccountBillItem{
 			PipCode:          standardPipCode,
 			ProductName:      convProductName(standardPipCode, *v.ProductName),
