@@ -88,12 +88,13 @@ func convQueryAccountBill(response *model.ListCustomerselfResourceRecordsRespons
 	for _, v := range feeRecords {
 		// 类型这里需要匹配，在寻找接口
 		//standardPipCode := convPipCode(*v.CloudServiceTypeName)
+		// todo 查询一下华为的资源类型
 		standardPipCode := types.ECS
 		item := types.AccountBillItem{
 			PipCode:          standardPipCode,
 			ProductName:      convProductName(standardPipCode, *v.ProductName),
 			BillingDate:      *v.BillDate,                          // has date when Granularity=DAILY
-			SubscriptionType: convSubscriptionType("Subscription"), // 先写死
+			SubscriptionType: convSubscriptionType("Subscription"), // todo 先写死
 			Currency:         currency,
 			PretaxAmount:     *v.Amount,
 		}
