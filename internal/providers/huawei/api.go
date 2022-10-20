@@ -92,8 +92,8 @@ func convQueryAccountBill(response *model.ListCustomerselfResourceRecordsRespons
 		item := types.AccountBillItem{
 			PipCode:          standardPipCode,
 			ProductName:      convProductName(standardPipCode, *v.ProductName),
-			BillingDate:      *v.BillDate, // has date when Granularity=DAILY
-			SubscriptionType: convSubscriptionType(*v.ResourceTypeName),
+			BillingDate:      *v.BillDate,                          // has date when Granularity=DAILY
+			SubscriptionType: convSubscriptionType("Subscription"), // 先写死
 			Currency:         currency,
 			PretaxAmount:     *v.Amount,
 		}
