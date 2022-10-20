@@ -41,3 +41,9 @@ type AccountBillItem struct {
 	Currency         string                 `json:"Currency" xml:"Currency"`
 	PretaxAmount     float64                `json:"PretaxAmount" xml:"PretaxAmount"` // 应付金额
 }
+
+type ServiceType struct {
+	ServiceTypeName string `json:"service_type_name"`
+	ServiceTypeCode string `json:"service_type_code"`
+	Abbreviation    string `json:"abbreviation"`
+}

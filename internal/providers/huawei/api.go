@@ -2,13 +2,14 @@ package huawei
 
 import (
 	"context"
-
+	"fmt"
 	"github.com/galayx-future/costpilot/internal/constants/cloud"
 	"github.com/galayx-future/costpilot/internal/providers/types"
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/core/auth/global"
 	bss "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2"
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2/model"
 	regionHuawei "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2/region"
+	"time"
 )
 
 type HuaweiCloud struct {
@@ -128,4 +129,57 @@ func convProductName(pipCode types.PipCode, defaultName ...string) string {
 	//}
 	// 暂不启用转换，直接返回
 	return defaultName[0]
+}
+
+func (p *HuaweiCloud) ListServiceTypes() (*model.ListServiceTypesResponse, error) {
+	var err error
+	billItems := make([]types.ServiceType, 0)
+
+	request := &model.ListServiceTypesRequest{}
+	offsetRequest := int32(0)
+	request.Offset = &offsetRequest
+	limitRequest := int32(10)
+	request.Limit = &limitRequest
+
+	pageNum := int32(0)
+	response := &model.ListServiceTypesResponse{}
+	for {
+		response, err := p.bssClientOpt.ListServiceTypes(request)
+
+		fmt.Println("request:{}, response:{}", request, response)
+		if err == nil {
+			fmt.Printf("%+v\n", response)
+		} else {
+			fmt.Println(err)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+		totalCount := response.TotalCount
+		if len(billItems) == 0 {
+			billItems = make([]types.ServiceType, 0, *totalCount)
+		}
+
+		if len(billItems) >= int(*totalCount) {
+			break
+		}
+
+		for _, v := range *response.ServiceTypes {
+			serviceType := types.ServiceType{}
+			serviceType.ServiceTypeName = *v.ServiceTypeName
+			serviceType.ServiceTypeCode = *v.ServiceTypeCode
+			serviceType.Abbreviation = *v.Abbreviation
+			billItems = append(billItems, serviceType)
+		}
+
+		pageNum++
+		request.Offset = &pageNum
+		time.Sleep(2 * time.Second)
+		fmt.Println("request:{}", request)
+	}
+
+	fmt.Println("billItems:{}", billItems)
+
+	return response, err
 }
