@@ -2,14 +2,12 @@ package huawei
 
 import (
 	"context"
-	"fmt"
 	"github.com/galayx-future/costpilot/internal/constants/cloud"
 	"github.com/galayx-future/costpilot/internal/providers/types"
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/core/auth/global"
 	bss "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2"
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2/model"
 	regionHuawei "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2/region"
-	"time"
 )
 
 type HuaweiCloud struct {
@@ -29,12 +27,10 @@ func New(AK, SK, region string) (*HuaweiCloud, error) {
 	}, nil
 }
 
-// ProviderType
 func (*HuaweiCloud) ProviderType() string {
 	return cloud.HuaweiCloud
 }
 
-// QueryAccountBill
 func (p *HuaweiCloud) QueryAccountBill(ctx context.Context, param types.QueryAccountBillRequest) (types.DataInQueryAccountBill, error) {
 	var err error
 	billItems := make([]types.AccountBillItem, 0)
@@ -77,7 +73,6 @@ func (p *HuaweiCloud) QueryAccountBill(ctx context.Context, param types.QueryAcc
 	return result, nil
 }
 
-// convQueryAccountBill
 func convQueryAccountBill(response *model.ListCustomerselfResourceRecordsResponse, currency string) []types.AccountBillItem {
 	if response == nil {
 		return nil
@@ -86,15 +81,12 @@ func convQueryAccountBill(response *model.ListCustomerselfResourceRecordsRespons
 	feeRecords := *response.FeeRecords
 	result := make([]types.AccountBillItem, 0, len(feeRecords))
 	for _, v := range feeRecords {
-		// 类型这里需要匹配，在寻找接口
-		//standardPipCode := convPipCode(*v.CloudServiceTypeName)
-		// todo 查询一下华为的资源类型
-		standardPipCode := types.ECS
+		standardPipCode := convPipCode(*v.CloudServiceType)
 		item := types.AccountBillItem{
 			PipCode:          standardPipCode,
-			ProductName:      convProductName(standardPipCode, *v.ProductName),
-			BillingDate:      *v.BillDate,                          // has date when Granularity=DAILY
-			SubscriptionType: convSubscriptionType("Subscription"), // todo 先写死
+			ProductName:      *v.ProductName,
+			BillingDate:      *v.BillDate, // has date when Granularity=DAILY
+			SubscriptionType: convSubscriptionType(*v.ChargeMode),
 			Currency:         currency,
 			PretaxAmount:     *v.Amount,
 		}
@@ -104,83 +96,47 @@ func convQueryAccountBill(response *model.ListCustomerselfResourceRecordsRespons
 	return result
 }
 
-func convSubscriptionType(subscriptionType string) cloud.SubscriptionType {
-	switch subscriptionType {
-	case "Subscription":
+func convSubscriptionType(chargeMode string) cloud.SubscriptionType {
+	switch chargeMode {
+	//1:包年/包月
+	case "1":
 		return cloud.PrePaid
-	case "PayAsYouGo":
+	//3：按需
+	case "3":
 		return cloud.PostPaid
 	}
 	return "undefined"
 }
 
 func convPipCode(pipCode string) types.PipCode {
-	//switch pipCode {
-	//case "oss":
-	//	return types.S3
-	//}
-	// 暂不启用转换，直接返回
-	return types.PipCode(pipCode)
-}
-
-func convProductName(pipCode types.PipCode, defaultName ...string) string {
-	//name := types.PidCode2Name(pipCode)
-	//if name == types.Undefined && len(defaultName) != 0 {
-	//	return defaultName[0]
-	//}
-	// 暂不启用转换，直接返回
-	return defaultName[0]
-}
-
-func (p *HuaweiCloud) ListServiceTypes() (*model.ListServiceTypesResponse, error) {
-	var err error
-	billItems := make([]types.ServiceType, 0)
-
-	request := &model.ListServiceTypesRequest{}
-	offsetRequest := int32(0)
-	request.Offset = &offsetRequest
-	limitRequest := int32(10)
-	request.Limit = &limitRequest
-
-	pageNum := int32(0)
-	response := &model.ListServiceTypesResponse{}
-	for {
-		response, err := p.bssClientOpt.ListServiceTypes(request)
-
-		fmt.Println("request:{}, response:{}", request, response)
-		if err == nil {
-			fmt.Printf("%+v\n", response)
-		} else {
-			fmt.Println(err)
-		}
-
-		if err != nil {
-			return nil, err
-		}
-		totalCount := response.TotalCount
-		if len(billItems) == 0 {
-			billItems = make([]types.ServiceType, 0, *totalCount)
-		}
-
-		if len(billItems) >= int(*totalCount) {
-			break
-		}
-
-		for _, v := range *response.ServiceTypes {
-			serviceType := types.ServiceType{}
-			serviceType.ServiceTypeName = *v.ServiceTypeName
-			serviceType.ServiceTypeCode = *v.ServiceTypeCode
-			serviceType.Abbreviation = *v.Abbreviation
-			billItems = append(billItems, serviceType)
-		}
-
-		pageNum++
-		request.Offset = &pageNum
-		time.Sleep(2 * time.Second)
-		fmt.Println("request:{}", request)
+	switch pipCode {
+	//弹性云服务器
+	case "hws.service.type.ec2":
+		return types.ECS
+	//弹性公网IP
+	case "hws.service.type.eip":
+		return types.EIP
+	//对象存储服务
+	case "hws.service.type.obs":
+		return types.S3
+		//NAT网关
+	case "hws.service.type.natgateway":
+		return types.NAT
+		//弹性文件服务
+	case "hws.service.type.sfs":
+		return types.NAS
+		//弹性负载均衡
+	case "hws.service.type.elb":
+		return types.SLB
+		//分布式缓存服务
+	case "hws.service.type.dcs":
+		return types.KVSTORE
+		//云桌面
+	case "hws.service.type.vdi":
+		return types.GWS
+		// 企业网络部署规划设计服务
+	case "hws.resource.type.pds.en":
+		return types.CBN
 	}
-
-	fmt.Println("billItems:{}", billItems)
-
-	return response, err
+	return types.PipCode(pipCode)
 }

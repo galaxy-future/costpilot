@@ -193,23 +193,3 @@ func testConvSubscriptionType(subscriptionType string) cloud.SubscriptionType {
 	}
 	return "undefined"
 }
-
-func TestHuaweiCloud_ListServiceTypes(t *testing.T) {
-	auth := global.NewCredentialsBuilder().
-		WithAk(_AK).
-		WithSk(_SK).
-		Build()
-	bssClientOpt := bss.NewBssClient(bss.BssClientBuilder().WithRegion(regionHuawei.ValueOf(_REGION)).WithCredential(auth).Build())
-
-	p := &HuaweiCloud{
-		bssClientOpt: bssClientOpt,
-	}
-
-	got, err := p.ListServiceTypes()
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Println(got)
-}
