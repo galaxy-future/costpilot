@@ -52,6 +52,7 @@ func (s *CostService) GetDailyCost(ctx context.Context, day string, isGroupByPro
 			ProductName:      d.ProductName,
 			PretaxAmount:     d.PretaxAmount,
 			SubscriptionType: d.SubscriptionType,
+			Currency:         d.Currency,
 		}
 		productCost, ok := result.ProductsBilling[item.PipCode]
 		if !ok { // first item
@@ -136,6 +137,7 @@ func (s *CostService) GetMonthlyCost(ctx context.Context, month string, isGroupB
 			ProductName:      d.ProductName,
 			PretaxAmount:     d.PretaxAmount,
 			SubscriptionType: d.SubscriptionType,
+			Currency:         d.Currency,
 		}
 		productCost, ok := result.ProductsBilling[item.PipCode]
 		if !ok { // first item

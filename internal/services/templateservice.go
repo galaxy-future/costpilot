@@ -106,7 +106,7 @@ func (s *TemplateService) FormatDayStatistics(ctx context.Context) (template.Cos
 			Chart: template.ChartInRatios{
 				ID:       "productTypeRatio",
 				Title:    "日成本构成比例",
-				MidUnit:  "￥",
+				MidUnit:  s.extractCurrencyUnit(),
 				MidValue: "",
 				Data:     s.productTypeRatioData(recentDay),
 			},
@@ -115,7 +115,7 @@ func (s *TemplateService) FormatDayStatistics(ctx context.Context) (template.Cos
 			Chart: template.ChartInRatios{
 				ID:       "providerTypeRatio",
 				Title:    "日成本云厂商比例",
-				MidUnit:  "￥",
+				MidUnit:  s.extractCurrencyUnit(),
 				MidValue: "",
 				Data:     s.providerTypeRatioData(recentDay),
 			},
@@ -124,7 +124,7 @@ func (s *TemplateService) FormatDayStatistics(ctx context.Context) (template.Cos
 			Chart: template.ChartInRatios{
 				ID:       "chargeTypeRatio",
 				Title:    "云服务器日花费付费类型",
-				MidUnit:  "￥",
+				MidUnit:  s.extractCurrencyUnit(),
 				MidValue: "",
 				Data:     s.chargeTypeRatioData(recentDay),
 			},
@@ -143,7 +143,7 @@ func (s *TemplateService) FormatDayStatistics(ctx context.Context) (template.Cos
 			Series: s.getDayItemInSeries(),
 			YTitle: []string{"成本(元)", "变化比(%)"},
 			TooltipUnit: template.TooltipUnit{
-				Bar:  "¥",
+				Bar:  s.extractCurrencyUnit(),
 				Line: "%",
 			},
 		},
@@ -170,7 +170,7 @@ func (s *TemplateService) FormatMonthStatistics(ctx context.Context) (template.C
 			Chart: template.ChartInRatios{
 				ID:       "productTypeRatio",
 				Title:    "月成本构成比例",
-				MidUnit:  "￥",
+				MidUnit:  s.extractCurrencyUnit(),
 				MidValue: "",
 				Data:     s.productTypeRatioData(recentMonth),
 			},
@@ -179,7 +179,7 @@ func (s *TemplateService) FormatMonthStatistics(ctx context.Context) (template.C
 			Chart: template.ChartInRatios{
 				ID:       "providerTypeRatio",
 				Title:    "月成本云厂商比例",
-				MidUnit:  "￥",
+				MidUnit:  s.extractCurrencyUnit(),
 				MidValue: "",
 				Data:     s.providerTypeRatioData(recentMonth),
 			},
@@ -188,7 +188,7 @@ func (s *TemplateService) FormatMonthStatistics(ctx context.Context) (template.C
 			Chart: template.ChartInRatios{
 				ID:       "chargeTypeRatio",
 				Title:    "云服务器月花费付费类型",
-				MidUnit:  "￥",
+				MidUnit:  s.extractCurrencyUnit(),
 				MidValue: "",
 				Data:     s.chargeTypeRatioData(recentMonth),
 			},
@@ -207,7 +207,7 @@ func (s *TemplateService) FormatMonthStatistics(ctx context.Context) (template.C
 			Series: s.getMonthItemInSeries(),
 			YTitle: []string{"成本(元)", "变化比(%)"},
 			TooltipUnit: template.TooltipUnit{
-				Bar:  "¥",
+				Bar:  s.extractCurrencyUnit(),
 				Line: "%",
 			},
 		},
@@ -523,4 +523,26 @@ func (s *TemplateService) ExportCostAnalysis(ctx context.Context) error {
 
 	log.Printf("I! ExportCostAnalysis done")
 	return nil
+}
+func (s *TemplateService) extractCurrencyUnit() (result string) {
+	s.DaysBilling.Range(func(key, value interface{}) bool {
+		for _, v := range value.(data.DailyBilling).ProductsBilling {
+			if len(v.Items) > 0 {
+				result = tools.CurrencyUnit(v.Items[0].Currency)
+				return false
+			}
+		}
+		return true
+	})
+	s.MonthsBilling.Range(func(key, value interface{}) bool {
+		for _, v := range value.(data.MonthlyBilling).ProductsBilling {
+			if len(v.Items) > 0 {
+				result = tools.CurrencyUnit(v.Items[0].Currency)
+				return false
+			}
+		}
+		return true
+	})
+	return
+
 }

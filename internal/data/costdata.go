@@ -7,6 +7,7 @@ type ItemInProductBilling struct {
 	ProductName      string                 `json:"product_name"`
 	PretaxAmount     float64                `json:"pretax_amount"`     //应付金额
 	SubscriptionType cloud.SubscriptionType `json:"subscription_type"` // PostPaid | PrePaid
+	Currency         string                 `json:"currency"`
 }
 type ProductBilling struct {
 	ProductName string                 `json:"product_name"`
