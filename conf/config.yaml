@@ -1,7 +1,7 @@
 cloud_accounts:
-  - provider:  AlibabaCloud
-    ak:  # required
-    sk:  # required
-    region_id:  cn-beijing
-    name:  1 # not required
+  - provider:  TencentCloud
+    ak:  AKIDLZdm2GMPGByY1MiCf7iARVP9thXFuUM6 # required
+    sk:  0qhQ8sX2LfJ2d4MesytgK971uhT4WotR # required
+    region_id:  ap-beijing-2
+    name:  12 # not required
 

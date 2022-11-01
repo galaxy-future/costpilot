@@ -24,7 +24,7 @@ func New(ak, sk, regionId string) (*TencentCloud, error) {
 	credential := common.NewCredential(ak, sk)
 	cpf := profile.NewClientProfile()
 	cpf.HttpProfile.Endpoint = _billingEndpoint
-	billingClient, err := billing.NewClient(credential, regionId, cpf)
+	billingClient, err := billing.NewClient(credential, "", cpf)
 	if err != nil {
 		return nil, err
 	}
