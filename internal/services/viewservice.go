@@ -48,7 +48,7 @@ func (s *ViewService) GetBillingMap() (*sync.Map, *sync.Map) {
 	return &s.monthsBilling, &s.daysBilling
 }
 
-//getRecent15DaysBilling today is not included
+// getRecent15DaysBilling today is not included
 func (s *ViewService) getRecent15DaysBilling(ctx context.Context) error {
 	billingDate := s.bp.GetRecentXDaysBillingDate(15)
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {

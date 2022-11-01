@@ -8,15 +8,15 @@ import (
 	"github.com/galayx-future/costpilot/internal/providers/types"
 )
 
-var _AK = "ak_test_123"
-var _SK = "sk_test_123"
+var _AK = ""
+var _SK = ""
 
 func TestAWSCloud_QueryAccountBill(t *testing.T) {
 	type args struct {
 		ctx   context.Context
 		param types.QueryAccountBillRequest
 	}
-	awsCloud, err := New(_AK, _SK, "us-east-1")
+	awsCloud, err := New(_AK, _SK, "cn-north-1")
 	if err != nil {
 		t.Errorf("AWSCloud.New error=%v", err)
 	}
@@ -46,8 +46,8 @@ func TestAWSCloud_QueryAccountBill(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				param: types.QueryAccountBillRequest{
-					BillingCycle:     "2022-09",
-					IsGroupByProduct: true,
+					BillingCycle:     "2022-07",
+					IsGroupByProduct: false,
 					Granularity:      types.Monthly,
 				},
 			},

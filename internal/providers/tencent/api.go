@@ -2,9 +2,11 @@ package tencent
 
 import (
 	"context"
-	"fmt"
 	"strconv"
+	"strings"
 	"time"
+
+	"github.com/alibabacloud-go/tea/tea"
 
 	"github.com/galayx-future/costpilot/internal/constants/cloud"
 	"github.com/galayx-future/costpilot/internal/providers/types"
@@ -45,6 +47,7 @@ func (p *TencentCloud) QueryAccountBill(_ context.Context, param types.QueryAcco
 	request.NeedRecordNum = &needNum
 	request.Limit = &_maxPageSize
 	request.Offset = &offset
+	request.NeedRecordNum = common.Int64Ptr(1) //1 for needing total ,0 for not
 
 	// 根据不同的账单周期粒度组装数据
 	switch param.Granularity {
@@ -85,7 +88,7 @@ func (p *TencentCloud) QueryAccountBill(_ context.Context, param types.QueryAcco
 		request.Offset = &offset
 	}
 
-	itemList, err := convQueryAccountBill(param.IsGroupByProduct, allBillList)
+	itemList, err := convQueryAccountBill(param, allBillList)
 	if err != nil {
 		return types.DataInQueryAccountBill{}, err
 	}
@@ -96,38 +99,53 @@ func (p *TencentCloud) QueryAccountBill(_ context.Context, param types.QueryAcco
 	}, nil
 }
 
-func convQueryAccountBill(isGroupByProduct bool, billList []*billing.BillDetail) ([]types.AccountBillItem, error) {
-	var billingItem []types.AccountBillItem
-	for _, item := range billList {
-		payTime, err := convPayTime2YM(item.PayTime)
-		if err != nil {
-			return nil, err
-		}
-
-		if isGroupByProduct {
-			// 各组件金额相加
-			var amount float64 = 0
-			for _, i := range item.ComponentSet {
-				amount += convPretaxAmount(i.RealCost)
-			}
-			billingItem = append(billingItem, types.AccountBillItem{
-				PipCode:      convPipCode(item.BusinessCode),
-				ProductName:  *item.BusinessCodeName,
-				BillingDate:  payTime,
-				PretaxAmount: amount,
-			})
-		} else {
-			for _, i := range item.ComponentSet {
-				productName := fmt.Sprintf("%s-%s", *item.BusinessCodeName, *i.ItemCodeName)
-				billingItem = append(billingItem, types.AccountBillItem{
-					PipCode:      convPipCode(item.BusinessCode),
-					ProductName:  productName,
-					BillingDate:  payTime,
-					PretaxAmount: convPretaxAmount(i.RealCost),
-				})
-			}
-		}
+func convQueryAccountBill(param types.QueryAccountBillRequest, billList []*billing.BillDetail) ([]types.AccountBillItem, error) {
+	if billList == nil {
+		return nil, errors.New("invalid bill list")
 	}
+	if len(billList) == 0 {
+		return []types.AccountBillItem{}, nil
+	}
+	billingItem := make([]types.AccountBillItem, 0)
+	costMap := make(map[string]float64)
+	checkMap := make(map[string]bool)
+	var totalCost float64
+	currency := convCurrency(tea.StringValue(billList[0].ComponentSet[0].PriceUnit))
+	for _, item := range billList {
+		costMap[tea.StringValue(item.BusinessCodeName)+tea.StringValue(item.PayModeName)] += sumComponentSet(item.ComponentSet)
+	}
+	if param.IsGroupByProduct {
+		for _, item := range billList {
+			if checkMap[tea.StringValue(item.BusinessCodeName)+tea.StringValue(item.PayModeName)] {
+				continue
+			}
+			temp := types.AccountBillItem{
+				PipCode:          types.PipCode(tea.StringValue(item.BusinessCode)),
+				ProductName:      tea.StringValue(item.BusinessCodeName),
+				BillingDate:      "",
+				SubscriptionType: convSubscriptionType(tea.StringValue(item.PayModeName)),
+				Currency:         currency,
+				PretaxAmount:     costMap[tea.StringValue(item.BusinessCodeName)+tea.StringValue(item.PayModeName)],
+			}
+			if param.Granularity == types.Daily {
+				temp.BillingDate = param.BillingDate
+			}
+			billingItem = append(billingItem, temp)
+			checkMap[tea.StringValue(item.BusinessCodeName)+tea.StringValue(item.PayModeName)] = true
+		}
+		return billingItem, nil
+	}
+	for _, cost := range costMap {
+		totalCost += cost
+	}
+	temp := types.AccountBillItem{
+		Currency:     currency,
+		PretaxAmount: totalCost,
+	}
+	if param.Granularity == types.Daily {
+		temp.BillingDate = param.BillingDate
+	}
+	billingItem = append(billingItem, temp)
 	return billingItem, nil
 }
 
@@ -140,7 +158,6 @@ func convPretaxAmount(price *string) float64 {
 		return 0
 	}
 	priceFloat, _ := strconv.ParseFloat(*price, 64)
-	fmt.Println(priceFloat)
 	return priceFloat
 }
 
@@ -165,4 +182,32 @@ func parseDateStartEndTime(date string) (string, string, error) {
 	dateFormatted := t.Format("2006-01-02")
 
 	return dateFormatted + " 00:00:00", dateFormatted + " 23:59:59", nil
+}
+func sumComponentSet(componentSet []*billing.BillDetailComponent) (result float64) {
+	for _, v := range componentSet {
+		result += convPretaxAmount(v.RealCost)
+	}
+	return
+}
+func convSubscriptionType(subscriptionType string) cloud.SubscriptionType {
+	switch subscriptionType {
+	case "包年包月":
+		return cloud.PrePaid
+	case "按量计费":
+		return cloud.PostPaid
+	}
+	return "undefined"
+}
+func convCurrency(priceUnit string) (currency string) {
+	strs := strings.Split(priceUnit, "/")
+	if len(strs) == 0 {
+		return
+	}
+	switch strs[0] {
+	case "元":
+		currency = "CNY"
+	case "刀":
+		currency = "USD"
+	}
+	return
 }
