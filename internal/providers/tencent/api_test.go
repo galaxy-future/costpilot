@@ -173,7 +173,7 @@ func TestQueryAccountBill(t *testing.T) {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 			resp, err := p.QueryAccountBill(context.Background(), tt)
 			if err != nil {
-				fmt.Errorf("%#v", err)
+				t.Errorf("%#v", err)
 			}
 			fmt.Println(resp)
 		})
