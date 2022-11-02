@@ -1,6 +1,6 @@
 cloud_accounts:
-  - provider:  AWSCloud
+  - provider:  # required :AlibabaCloud | Tencent | AWS
     ak:   # required
     sk:   # required
-    region_id:  cn-north-1
-    name:  123 # not required
+    region_id:  # required
+    name:  # not required
