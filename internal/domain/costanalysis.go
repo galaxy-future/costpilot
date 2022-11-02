@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/galayx-future/costpilot/internal/constants/cloud"
+
 	"github.com/galayx-future/costpilot/internal/services"
 	"github.com/galayx-future/costpilot/internal/types"
 	"github.com/pkg/errors"
@@ -15,6 +17,8 @@ type CostAnalysisDomain struct {
 	nowT              time.Time
 	monthsBillingList []*sync.Map
 	daysBillingList   []*sync.Map
+
+	provider cloud.Provider // tmp solution for multiple cloud provider TODO delete
 }
 
 func NewCostAnalysisDomain() *CostAnalysisDomain {
@@ -33,6 +37,7 @@ func (s *CostAnalysisDomain) GetBillingList(ctx context.Context) error {
 		return errors.New("cloud account is not configured")
 	}
 	for _, a := range accounts {
+		s.provider = a.Provider
 		monthsBilling, daysBilling, err := s.GetBilling(ctx, a)
 		if err != nil {
 			log.Printf("E! get cloud-acount[%v] billing error", a.Name)
@@ -59,6 +64,7 @@ func (s *CostAnalysisDomain) GetBilling(ctx context.Context, a types.CloudAccoun
 // ExportStatisticData 导出到静态文件
 func (s *CostAnalysisDomain) ExportStatisticData(ctx context.Context) error {
 	formatSvc := services.NewTemplateService(nil, nil, s.nowT)
+	formatSvc.SetProvider(s.provider)
 	err := formatSvc.CombineBilling(ctx, s.monthsBillingList, s.daysBillingList)
 	if err != nil {
 		return err

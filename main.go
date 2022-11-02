@@ -4,6 +4,8 @@ import (
 	"context"
 	"os"
 
+	_ "github.com/galayx-future/costpilot/tools"
+
 	"github.com/galayx-future/costpilot/internal/domain"
 
 	"github.com/galayx-future/costpilot/internal/config"
