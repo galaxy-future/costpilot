@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/alibabacloud-go/tea/tea"
-	"go.uber.org/ratelimit"
+	"github.com/galayx-future/costpilot/tools"
 
+	"github.com/alibabacloud-go/tea/tea"
 	"github.com/galayx-future/costpilot/internal/constants/cloud"
 	"github.com/galayx-future/costpilot/internal/providers/types"
 	"github.com/pkg/errors"
@@ -21,8 +21,6 @@ type TencentCloud struct {
 	billingClient *billing.Client
 }
 
-var limiter ratelimit.Limiter
-
 func New(ak, sk, regionId string) (*TencentCloud, error) {
 	credential := common.NewCredential(ak, sk)
 	cpf := profile.NewClientProfile()
@@ -31,7 +29,6 @@ func New(ak, sk, regionId string) (*TencentCloud, error) {
 	if err != nil {
 		return nil, err
 	}
-	limiter = ratelimit.New(5) //per second
 	return &TencentCloud{billingClient: billingClient}, nil
 }
 
@@ -73,7 +70,7 @@ func (p *TencentCloud) QueryAccountBill(_ context.Context, param types.QueryAcco
 	// 分页直到获取全部
 	var allBillList []*billing.BillDetail
 	for {
-		limiter.Take()
+		tools.Limiters[cloud.TencentCloud+"-"+"DescribeBillDetail"].Take()
 		response, err := p.billingClient.DescribeBillDetail(request)
 		if err != nil {
 			return types.DataInQueryAccountBill{}, err

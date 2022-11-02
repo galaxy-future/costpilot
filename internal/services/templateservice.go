@@ -23,14 +23,16 @@ type TemplateService struct {
 
 	bp           *tools.BillingDatePilot
 	analysisData template.AnalysisData
+	provider     cloud.Provider
 }
 
-func NewTemplateService(monthsBilling, daysBilling *sync.Map, t time.Time) *TemplateService {
+func NewTemplateService(monthsBilling, daysBilling *sync.Map, t time.Time, provider cloud.Provider) *TemplateService {
 	return &TemplateService{
 		MonthsBilling: monthsBilling,
 		DaysBilling:   daysBilling,
 		bp:            tools.NewBillDatePilot().SetNowT(t),
 		analysisData:  template.AnalysisData{},
+		provider:      provider,
 	}
 }
 
@@ -141,7 +143,7 @@ func (s *TemplateService) FormatDayStatistics(ctx context.Context) (template.Cos
 			Title:  "成本走势",
 			XData:  s.getLast14Days(),
 			Series: s.getDayItemInSeries(),
-			YTitle: []string{"成本(元)", "变化比(%)"},
+			YTitle: []string{"成本 (¥)", "变化率 (%)"},
 			TooltipUnit: template.TooltipUnit{
 				Bar:  s.extractCurrencyUnit(),
 				Line: "%",
@@ -205,7 +207,7 @@ func (s *TemplateService) FormatMonthStatistics(ctx context.Context) (template.C
 			Title:  "成本走势",
 			XData:  s.getLast12Months(),
 			Series: s.getMonthItemInSeries(),
-			YTitle: []string{"成本(元)", "变化比(%)"},
+			YTitle: []string{"成本 (¥)", "变化率 (%)"},
 			TooltipUnit: template.TooltipUnit{
 				Bar:  s.extractCurrencyUnit(),
 				Line: "%",
@@ -272,7 +274,7 @@ func (s *TemplateService) productTypeRatioData(date tools.BillingDate) []templat
 func (s *TemplateService) providerTypeRatioData(date tools.BillingDate) []template.ItemInRatioData {
 	return []template.ItemInRatioData{
 		{
-			Name:  cloud.AlibabaCloud.StringCN(),
+			Name:  s.provider.StringCN(),
 			Value: s.sumBillingDateAmount(date),
 		},
 	}
@@ -283,15 +285,26 @@ func (s *TemplateService) chargeTypeRatioData(date tools.BillingDate) []template
 	totalMap := make(map[cloud.SubscriptionType]float64) // key :prePaid or postPaid, val : bill
 	for _, d := range date.Days {
 		if val, ok := s.DaysBilling.Load(d); ok {
-			for _, item := range val.(data.DailyBilling).ProductsBilling[types.ECS.String()].Items {
-				totalMap[item.SubscriptionType] += item.PretaxAmount
+			for key, value := range val.(data.DailyBilling).ProductsBilling {
+				if key == types.ECS.String() || key == "p_cvm" || key == "EC2 - Other" {
+					for _, item := range value.Items {
+						totalMap[item.SubscriptionType] += item.PretaxAmount
+					}
+				}
 			}
+			/*			for _, item := range val.(data.DailyBilling).ProductsBilling[types.ECS.String()].Items {
+						totalMap[item.SubscriptionType] += item.PretaxAmount
+					}*/
 		}
 	}
 	for _, m := range date.Months {
 		if val, ok := s.MonthsBilling.Load(m); ok {
-			for _, item := range val.(data.MonthlyBilling).ProductsBilling[types.ECS.String()].Items {
-				totalMap[item.SubscriptionType] += item.PretaxAmount
+			for key, value := range val.(data.MonthlyBilling).ProductsBilling {
+				if key == types.ECS.String() || key == "p_cvm" || key == "EC2 - Other" {
+					for _, item := range value.Items {
+						totalMap[item.SubscriptionType] += item.PretaxAmount
+					}
+				}
 			}
 		}
 	}
@@ -403,6 +416,11 @@ func (s *TemplateService) getMonthItemInSeries() []template.ItemInSeries {
 	}
 	yrOnyrRatios := make([]string, 0, 12)
 	for i := 1; i < len(r[0].Data); i++ {
+		if i > len(r[1].Data) {
+			yrOnyrRatios = append(yrOnyrRatios, "--")
+			log.Println("E! lose data on year on year ratio")
+			continue
+		}
 		yrOnyrRatios = append(yrOnyrRatios, tools.RatioString(r[1].Data[i-1], r[0].Data[i])) // (current - previous)/previous
 	}
 	r[2].Data = chainRatios  //环比上一月 ["22.34", ... "45.67"]

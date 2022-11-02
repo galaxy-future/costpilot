@@ -47,7 +47,7 @@ func TestAWSCloud_QueryAccountBill(t *testing.T) {
 				ctx: context.Background(),
 				param: types.QueryAccountBillRequest{
 					BillingCycle:     "2022-07",
-					IsGroupByProduct: false,
+					IsGroupByProduct: true,
 					Granularity:      types.Monthly,
 				},
 			},

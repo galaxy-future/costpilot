@@ -87,9 +87,9 @@ func convAccountBillItems(output *costexplorer.GetCostAndUsageOutput, param type
 		for _, group := range resultBytime.Groups {
 			newItem := types.AccountBillItem{
 				SubscriptionType: convChargeType(chargeType),
-				//PipCode:          "undefined",                // no such field in the AWS API response
-				Currency:    aws.StringValue(group.Metrics["BlendedCost"].Unit),
-				ProductName: group.Keys[0],
+				PipCode:          types.PipCode(group.Keys[0]),
+				Currency:         aws.StringValue(group.Metrics["BlendedCost"].Unit),
+				ProductName:      group.Keys[0],
 			}
 			newItem.PretaxAmount, err = convAmount(group.Metrics["BlendedCost"].Amount)
 			if err != nil {
@@ -142,6 +142,9 @@ func (p *AWSCloud) QueryByFilter(param types.QueryAccountBillRequest, chargeType
 	var err error
 	var billItems []types.AccountBillItem
 	if param.Granularity == types.Monthly {
+		if !IsValidMonth(param.BillingCycle) {
+			return []types.AccountBillItem{}, nil
+		}
 		start, err = time.Parse(dateFormat, param.BillingCycle+"-01")
 		start = time.Date(start.Year(), start.Month(), start.Day(), 0, 0, 0, 0, time.Local)
 		end = tools.AddDate(start, 0, 1, 0)
@@ -149,6 +152,9 @@ func (p *AWSCloud) QueryByFilter(param types.QueryAccountBillRequest, chargeType
 			return nil, err
 		}
 	} else if param.Granularity == types.Daily {
+		if !IsValidDate(param.BillingDate) {
+			return []types.AccountBillItem{}, nil
+		}
 		start, err = time.Parse(dateFormat, param.BillingDate)
 		start = time.Date(start.Year(), start.Month(), start.Day(), 0, 0, 0, 0, time.Local)
 		end = start.AddDate(0, 0, 1)
@@ -199,4 +205,18 @@ func (p *AWSCloud) QueryByFilter(param types.QueryAccountBillRequest, chargeType
 	}
 	return billItems, nil
 
+}
+func IsValidDate(date string) bool {
+	t, _ := time.Parse("2006-01-02", date)
+	if t.Before(tools.AddDate(time.Now(), -1, 0, 0)) {
+		return false
+	}
+	return true
+}
+func IsValidMonth(month string) bool {
+	t, _ := time.Parse("2006-01", month)
+	if t.Before(tools.AddDate(time.Now(), -1, 0, 0)) {
+		return false
+	}
+	return true
 }
