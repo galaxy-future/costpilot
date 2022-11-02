@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/galayx-future/costpilot/tools"
+	"github.com/galayx-future/costpilot/tools/limiter"
 
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/galayx-future/costpilot/internal/constants/cloud"
@@ -70,7 +70,8 @@ func (p *TencentCloud) QueryAccountBill(_ context.Context, param types.QueryAcco
 	// 分页直到获取全部
 	var allBillList []*billing.BillDetail
 	for {
-		tools.Limiters[cloud.TencentCloud+"-"+"DescribeBillDetail"].Take()
+		limiter := limiter.Limiters.GetLimiter(p.ProviderType()+"-"+"DescribeBillDetail", 3)
+		limiter.Take()
 		response, err := p.billingClient.DescribeBillDetail(request)
 		if err != nil {
 			return types.DataInQueryAccountBill{}, err

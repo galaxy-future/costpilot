@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/galayx-future/costpilot/tools"
+	_ "github.com/galayx-future/costpilot/tools"
 
 	"github.com/galayx-future/costpilot/internal/domain"
 
@@ -14,7 +14,6 @@ import (
 func main() {
 	ctx := context.Background()
 	printVersion()
-	tools.NewLimiters()
 	if err := config.Init(); err != nil {
 		os.Exit(1)
 	}
