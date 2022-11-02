@@ -1,4 +1,4 @@
-package services
+package template
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 	"github.com/spf13/cast"
 )
 
-type TemplateService struct {
+type CostTemplate struct {
 	DaysBilling   *sync.Map //key : day , val : data.DailyBilling
 	MonthsBilling *sync.Map //key : month , val : data.MonthlyBilling
 
@@ -27,8 +27,8 @@ type TemplateService struct {
 	provider cloud.Provider // tmp solution for multiple cloud provider TODO delete
 }
 
-func NewTemplateService(monthsBilling, daysBilling *sync.Map, t time.Time) *TemplateService {
-	return &TemplateService{
+func NewCostTemplate(monthsBilling, daysBilling *sync.Map, t time.Time) *CostTemplate {
+	return &CostTemplate{
 		MonthsBilling: monthsBilling,
 		DaysBilling:   daysBilling,
 		bp:            tools.NewBillDatePilot().SetNowT(t),
@@ -36,12 +36,12 @@ func NewTemplateService(monthsBilling, daysBilling *sync.Map, t time.Time) *Temp
 	}
 }
 
-func (s *TemplateService) SetProvider(provider cloud.Provider) {
+func (s *CostTemplate) SetProvider(provider cloud.Provider) {
 	s.provider = provider
 }
 
 // CombineBilling 重新组合并制定 DaysBilling, MonthsBilling
-func (s *TemplateService) CombineBilling(ctx context.Context, monthsBillingList, daysBillingList []*sync.Map) error {
+func (s *CostTemplate) CombineBilling(ctx context.Context, monthsBillingList, daysBillingList []*sync.Map) error {
 	for _, monthMap := range monthsBillingList {
 		if s.MonthsBilling == nil {
 			var t sync.Map
@@ -93,7 +93,7 @@ func (s *TemplateService) CombineBilling(ctx context.Context, monthsBillingList,
 }
 
 // FormatDayStatistics
-func (s *TemplateService) FormatDayStatistics(ctx context.Context) (template.CostAnalysis, error) {
+func (s *CostTemplate) FormatDayStatistics(ctx context.Context) (template.CostAnalysis, error) {
 	costAnalysisByDay := template.CostAnalysis{
 		ViewType:   "day",
 		DataCycle:  "",
@@ -159,7 +159,7 @@ func (s *TemplateService) FormatDayStatistics(ctx context.Context) (template.Cos
 	return costAnalysisByDay, nil
 }
 
-func (s *TemplateService) FormatMonthStatistics(ctx context.Context) (template.CostAnalysis, error) {
+func (s *CostTemplate) FormatMonthStatistics(ctx context.Context) (template.CostAnalysis, error) {
 	costAnalysisByMonth := template.CostAnalysis{
 		ViewType:   "month",
 		DataCycle:  "",
@@ -223,7 +223,7 @@ func (s *TemplateService) FormatMonthStatistics(ctx context.Context) (template.C
 	return costAnalysisByMonth, nil
 }
 
-func (s *TemplateService) sumBillingDateAmount(date tools.BillingDate) string {
+func (s *CostTemplate) sumBillingDateAmount(date tools.BillingDate) string {
 	var sum float64
 	for _, m := range date.Months {
 		if val, ok := s.MonthsBilling.Load(m); ok {
@@ -238,7 +238,7 @@ func (s *TemplateService) sumBillingDateAmount(date tools.BillingDate) string {
 	return fmt.Sprintf("%.2f", sum)
 }
 
-func (s *TemplateService) productTypeRatioData(date tools.BillingDate) []template.ItemInRatioData {
+func (s *CostTemplate) productTypeRatioData(date tools.BillingDate) []template.ItemInRatioData {
 	ret := make([]template.ItemInRatioData, 0)
 	totalMap := make(map[string]float64) // key : pipCode, val : totalAmount
 	kM := make(map[string]string)        // key :pipCode productName
@@ -275,7 +275,7 @@ func (s *TemplateService) productTypeRatioData(date tools.BillingDate) []templat
 	return ret
 }
 
-func (s *TemplateService) providerTypeRatioData(date tools.BillingDate) []template.ItemInRatioData {
+func (s *CostTemplate) providerTypeRatioData(date tools.BillingDate) []template.ItemInRatioData {
 	return []template.ItemInRatioData{
 		{
 			Name:  s.provider.StringCN(),
@@ -284,7 +284,7 @@ func (s *TemplateService) providerTypeRatioData(date tools.BillingDate) []templa
 	}
 }
 
-func (s *TemplateService) chargeTypeRatioData(date tools.BillingDate) []template.ItemInRatioData {
+func (s *CostTemplate) chargeTypeRatioData(date tools.BillingDate) []template.ItemInRatioData {
 	ret := make([]template.ItemInRatioData, 0)
 	totalMap := make(map[cloud.SubscriptionType]float64) // key :prePaid or postPaid, val : bill
 	for _, d := range date.Days {
@@ -321,7 +321,7 @@ func (s *TemplateService) chargeTypeRatioData(date tools.BillingDate) []template
 	return ret
 }
 
-func (s *TemplateService) sumRatiosChartMidValue(items []template.ItemInRatioData) string {
+func (s *CostTemplate) sumRatiosChartMidValue(items []template.ItemInRatioData) string {
 	if len(items) == 0 {
 		return "-"
 	}
@@ -332,10 +332,10 @@ func (s *TemplateService) sumRatiosChartMidValue(items []template.ItemInRatioDat
 	return cast.ToString(sum)
 }
 
-func (s *TemplateService) getLast14Days() []string {
+func (s *CostTemplate) getLast14Days() []string {
 	return s.bp.GetRecentXDaysBillingDate(14).Days
 }
-func (s *TemplateService) getLast12Months() []string {
+func (s *CostTemplate) getLast12Months() []string {
 	ret := s.bp.GetRecentXMonthsBillingDate(12)
 	months := ret.Months
 	if len(ret.Days) != 0 {
@@ -343,7 +343,7 @@ func (s *TemplateService) getLast12Months() []string {
 	}
 	return months
 }
-func (s *TemplateService) getDayItemInSeries() []template.ItemInSeries {
+func (s *CostTemplate) getDayItemInSeries() []template.ItemInSeries {
 	r := []template.ItemInSeries{
 		template.ItemInSeries{
 			Name:       "成本(本期)",
@@ -387,7 +387,7 @@ func (s *TemplateService) getDayItemInSeries() []template.ItemInSeries {
 
 	return r
 }
-func (s *TemplateService) getMonthItemInSeries() []template.ItemInSeries {
+func (s *CostTemplate) getMonthItemInSeries() []template.ItemInSeries {
 	r := []template.ItemInSeries{
 		template.ItemInSeries{
 			Name:       "成本(本期)",
@@ -436,7 +436,7 @@ func (s *TemplateService) getMonthItemInSeries() []template.ItemInSeries {
 
 	return r
 }
-func (s *TemplateService) amountInLastXDays(n int32, isRecentYear bool) []string {
+func (s *CostTemplate) amountInLastXDays(n int32, isRecentYear bool) []string {
 	billingDate := s.bp.GetRecentXDaysBillingDate(n)
 	if !isRecentYear {
 		days := billingDate.Days
@@ -452,7 +452,7 @@ func (s *TemplateService) amountInLastXDays(n int32, isRecentYear bool) []string
 
 	return ret
 }
-func (s *TemplateService) amountInLastXMonths(n int32, isRecentYear bool) []string {
+func (s *CostTemplate) amountInLastXMonths(n int32, isRecentYear bool) []string {
 	billingDate := s.bp.GetRecentXMonthsBillingDate(n)
 	if !isRecentYear {
 		months := billingDate.Months
@@ -472,7 +472,7 @@ func (s *TemplateService) amountInLastXMonths(n int32, isRecentYear bool) []stri
 
 	return ret
 }
-func (s *TemplateService) getStatistics() []template.ItemInStatistics {
+func (s *CostTemplate) getStatistics() []template.ItemInStatistics {
 	yesterday := s.bp.GetRecentDayBillingDate()
 	yesterdayT, _ := time.ParseInLocation("2006-01-02", yesterday.Days[0], time.Local)
 	beforeYesterday := s.bp.GetPreviousDayBillingDate()
@@ -520,7 +520,7 @@ func (s *TemplateService) getStatistics() []template.ItemInStatistics {
 	return statistics
 }
 
-func (s *TemplateService) ExportCostAnalysis(ctx context.Context) error {
+func (s *CostTemplate) ExportCostAnalysis(ctx context.Context) error {
 	dayAnalysis, err := s.FormatDayStatistics(ctx)
 	if err != nil {
 		return err
@@ -546,7 +546,7 @@ func (s *TemplateService) ExportCostAnalysis(ctx context.Context) error {
 	log.Printf("I! ExportCostAnalysis done")
 	return nil
 }
-func (s *TemplateService) extractCurrencyUnit() (result string) {
+func (s *CostTemplate) extractCurrencyUnit() (result string) {
 	s.DaysBilling.Range(func(key, value interface{}) bool {
 		for _, v := range value.(data.DailyBilling).ProductsBilling {
 			if len(v.Items) > 0 {

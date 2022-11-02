@@ -1,4 +1,4 @@
-package services
+package template
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	s             TemplateService
+	s             CostTemplate
 	daysBilling   sync.Map
 	monthsBilling sync.Map
 )
@@ -53,7 +53,7 @@ func TestMain(m *testing.M) {
 		}
 	}
 
-	s = TemplateService{
+	s = CostTemplate{
 		DaysBilling:   &daysBilling,
 		MonthsBilling: &monthsBilling,
 		bp:            tools.NewBillDatePilot(),

@@ -6,6 +6,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/galayx-future/costpilot/internal/services/databean"
+	"github.com/galayx-future/costpilot/internal/services/template"
+
 	"github.com/galayx-future/costpilot/internal/constants/cloud"
 
 	"github.com/galayx-future/costpilot/internal/services"
@@ -51,25 +54,25 @@ func (s *CostAnalysisDomain) GetBillingList(ctx context.Context) error {
 
 // GetBilling
 func (s *CostAnalysisDomain) GetBilling(ctx context.Context, a types.CloudAccount) (monthsBilling, daysBilling *sync.Map, err error) {
-	viewSvc := services.NewViewService(a, s.nowT)
-	err = viewSvc.RunPipeline(ctx)
+	costDataBean := databean.NewCostDataBean(a, s.nowT)
+	err = costDataBean.RunPipeline(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
-	monthsBilling, daysBilling = viewSvc.GetBillingMap()
+	monthsBilling, daysBilling = costDataBean.GetBillingMap()
 	log.Printf("I! get cloud-account[%s] billing success", a.Name)
 	return
 }
 
 // ExportStatisticData 导出到静态文件
 func (s *CostAnalysisDomain) ExportStatisticData(ctx context.Context) error {
-	formatSvc := services.NewTemplateService(nil, nil, s.nowT)
-	formatSvc.SetProvider(s.provider)
-	err := formatSvc.CombineBilling(ctx, s.monthsBillingList, s.daysBillingList)
+	costTemplate := template.NewCostTemplate(nil, nil, s.nowT)
+	costTemplate.SetProvider(s.provider)
+	err := costTemplate.CombineBilling(ctx, s.monthsBillingList, s.daysBillingList)
 	if err != nil {
 		return err
 	}
-	err = formatSvc.ExportCostAnalysis(ctx)
+	err = costTemplate.ExportCostAnalysis(ctx)
 	if err != nil {
 		log.Printf("E! export cost-analysis data failed: %v\n", err)
 		return err
