@@ -143,7 +143,7 @@ func (s *TemplateService) FormatDayStatistics(ctx context.Context) (template.Cos
 			Title:  "成本走势",
 			XData:  s.getLast14Days(),
 			Series: s.getDayItemInSeries(),
-			YTitle: []string{"成本 (¥)", "变化率 (%)"},
+			YTitle: []string{"成本 (" + s.extractCurrencyUnit() + ")", "变化率 (%)"},
 			TooltipUnit: template.TooltipUnit{
 				Bar:  s.extractCurrencyUnit(),
 				Line: "%",
@@ -207,7 +207,7 @@ func (s *TemplateService) FormatMonthStatistics(ctx context.Context) (template.C
 			Title:  "成本走势",
 			XData:  s.getLast12Months(),
 			Series: s.getMonthItemInSeries(),
-			YTitle: []string{"成本 (¥)", "变化率 (%)"},
+			YTitle: []string{"成本 (" + s.extractCurrencyUnit() + ")", "变化率 (%)"},
 			TooltipUnit: template.TooltipUnit{
 				Bar:  s.extractCurrencyUnit(),
 				Line: "%",
