@@ -17,7 +17,8 @@ type CostAnalysisDomain struct {
 	nowT              time.Time
 	monthsBillingList []*sync.Map
 	daysBillingList   []*sync.Map
-	provider          cloud.Provider
+
+	provider cloud.Provider // tmp solution for multiple cloud provider TODO delete
 }
 
 func NewCostAnalysisDomain() *CostAnalysisDomain {
@@ -62,7 +63,8 @@ func (s *CostAnalysisDomain) GetBilling(ctx context.Context, a types.CloudAccoun
 
 // ExportStatisticData 导出到静态文件
 func (s *CostAnalysisDomain) ExportStatisticData(ctx context.Context) error {
-	formatSvc := services.NewTemplateService(nil, nil, s.nowT, s.provider)
+	formatSvc := services.NewTemplateService(nil, nil, s.nowT)
+	formatSvc.SetProvider(s.provider)
 	err := formatSvc.CombineBilling(ctx, s.monthsBillingList, s.daysBillingList)
 	if err != nil {
 		return err

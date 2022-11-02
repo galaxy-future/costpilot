@@ -23,17 +23,21 @@ type TemplateService struct {
 
 	bp           *tools.BillingDatePilot
 	analysisData template.AnalysisData
-	provider     cloud.Provider
+
+	provider cloud.Provider // tmp solution for multiple cloud provider TODO delete
 }
 
-func NewTemplateService(monthsBilling, daysBilling *sync.Map, t time.Time, provider cloud.Provider) *TemplateService {
+func NewTemplateService(monthsBilling, daysBilling *sync.Map, t time.Time) *TemplateService {
 	return &TemplateService{
 		MonthsBilling: monthsBilling,
 		DaysBilling:   daysBilling,
 		bp:            tools.NewBillDatePilot().SetNowT(t),
 		analysisData:  template.AnalysisData{},
-		provider:      provider,
 	}
+}
+
+func (s *TemplateService) SetProvider(provider cloud.Provider) {
+	s.provider = provider
 }
 
 // CombineBilling 重新组合并制定 DaysBilling, MonthsBilling
