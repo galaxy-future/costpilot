@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/galayx-future/costpilot/tools"
+	"github.com/galaxy-future/costpilot/tools"
 	"github.com/gin-gonic/gin"
 )
 

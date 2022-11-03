@@ -1,19 +1,19 @@
-package services
+package datareader
 
 import (
 	"context"
 	"testing"
 
-	"github.com/galayx-future/costpilot/internal/constants/cloud"
-	"github.com/galayx-future/costpilot/internal/data"
-	"github.com/galayx-future/costpilot/internal/providers"
+	"github.com/galaxy-future/costpilot/internal/constants/cloud"
+	"github.com/galaxy-future/costpilot/internal/data"
+	"github.com/galaxy-future/costpilot/internal/providers"
 	jsoniter "github.com/json-iterator/go"
 )
 
 var _AK = "ak_test_123"
 var _SK = "sk_test_123"
 
-func TestCostService_GetDailyCost(t *testing.T) {
+func TestCostDataRader_GetDailyCost(t *testing.T) {
 	type fields struct {
 		_provider providers.Provider
 	}
@@ -61,7 +61,7 @@ func TestCostService_GetDailyCost(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &CostService{
+			s := &CostDataReader{
 				_provider: tt.fields._provider,
 			}
 			got, err := s.GetDailyCost(tt.args.ctx, tt.args.date, tt.args.isGroupByProduct)
@@ -75,7 +75,7 @@ func TestCostService_GetDailyCost(t *testing.T) {
 	}
 }
 
-func TestCostService_GetMonthlyCost(t *testing.T) {
+func TestCostDataRader_GetMonthlyCost(t *testing.T) {
 	type fields struct {
 		_provider providers.Provider
 	}
@@ -123,7 +123,7 @@ func TestCostService_GetMonthlyCost(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &CostService{
+			s := &CostDataReader{
 				_provider: tt.fields._provider,
 			}
 			got, err := s.GetMonthlyCost(tt.args.ctx, tt.args.month, tt.args.isGroupByProduct)

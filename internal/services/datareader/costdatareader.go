@@ -1,31 +1,31 @@
-package services
+package datareader
 
 import (
 	"context"
 	"log"
 	"time"
 
-	"github.com/galayx-future/costpilot/internal/data"
-	"github.com/galayx-future/costpilot/internal/providers"
-	"github.com/galayx-future/costpilot/internal/providers/types"
-	"github.com/galayx-future/costpilot/tools"
+	"github.com/galaxy-future/costpilot/internal/data"
+	"github.com/galaxy-future/costpilot/internal/providers"
+	"github.com/galaxy-future/costpilot/internal/providers/types"
+	"github.com/galaxy-future/costpilot/tools"
 	"github.com/spf13/cast"
 	"golang.org/x/sync/errgroup"
 )
 
-type CostService struct {
+type CostDataReader struct {
 	_provider providers.Provider
 }
 
-func NewCostService(p providers.Provider) *CostService {
-	return &CostService{
+func NewCostDataReader(p providers.Provider) *CostDataReader {
+	return &CostDataReader{
 		_provider: p,
 	}
 }
 
 // GetDailyCost
 // date 2022-09-06 | isGroupByProduct true/false
-func (s *CostService) GetDailyCost(ctx context.Context, day string, isGroupByProduct bool) (data.DailyBilling, error) {
+func (s *CostDataReader) GetDailyCost(ctx context.Context, day string, isGroupByProduct bool) (data.DailyBilling, error) {
 	if !tools.IsValidDayDate(day) {
 		log.Printf("W! invalid day[%v]\n", day)
 		return data.DailyBilling{}, nil
@@ -52,6 +52,7 @@ func (s *CostService) GetDailyCost(ctx context.Context, day string, isGroupByPro
 			ProductName:      d.ProductName,
 			PretaxAmount:     d.PretaxAmount,
 			SubscriptionType: d.SubscriptionType,
+			Currency:         d.Currency,
 		}
 		productCost, ok := result.ProductsBilling[item.PipCode]
 		if !ok { // first item
@@ -73,7 +74,7 @@ func (s *CostService) GetDailyCost(ctx context.Context, day string, isGroupByPro
 
 // GetDaysCost
 // days ["2022-10-01","2022-10-02",]
-func (s *CostService) GetDaysCost(ctx context.Context, isGroupByProduct bool, days ...string) ([]data.DailyBilling, error) {
+func (s *CostDataReader) GetDaysCost(ctx context.Context, isGroupByProduct bool, days ...string) ([]data.DailyBilling, error) {
 	result := []data.DailyBilling{}
 	if len(days) == 0 {
 		return result, nil
@@ -110,7 +111,7 @@ func (s *CostService) GetDaysCost(ctx context.Context, isGroupByProduct bool, da
 
 // GetMonthlyCost
 // month 2022-09
-func (s *CostService) GetMonthlyCost(ctx context.Context, month string, isGroupByProduct bool) (data.MonthlyBilling, error) {
+func (s *CostDataReader) GetMonthlyCost(ctx context.Context, month string, isGroupByProduct bool) (data.MonthlyBilling, error) {
 	if !tools.IsValidMonthDate(month) {
 		log.Printf("W! invalid month[%v]\n", month)
 		return data.MonthlyBilling{}, nil
@@ -136,6 +137,7 @@ func (s *CostService) GetMonthlyCost(ctx context.Context, month string, isGroupB
 			ProductName:      d.ProductName,
 			PretaxAmount:     d.PretaxAmount,
 			SubscriptionType: d.SubscriptionType,
+			Currency:         d.Currency,
 		}
 		productCost, ok := result.ProductsBilling[item.PipCode]
 		if !ok { // first item
@@ -156,7 +158,7 @@ func (s *CostService) GetMonthlyCost(ctx context.Context, month string, isGroupB
 }
 
 // GetMonthsCost
-func (s *CostService) GetMonthsCost(ctx context.Context, isGroupByProduct bool, months ...string) ([]data.MonthlyBilling, error) {
+func (s *CostDataReader) GetMonthsCost(ctx context.Context, isGroupByProduct bool, months ...string) ([]data.MonthlyBilling, error) {
 	result := []data.MonthlyBilling{}
 	if len(months) == 0 {
 		return result, nil

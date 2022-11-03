@@ -1,4 +1,4 @@
-package services
+package template
 
 import (
 	"context"
@@ -8,14 +8,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/galayx-future/costpilot/internal/constants/cloud"
-	"github.com/galayx-future/costpilot/internal/data"
-	"github.com/galayx-future/costpilot/internal/providers/types"
-	"github.com/galayx-future/costpilot/tools"
+	"github.com/galaxy-future/costpilot/internal/constants/cloud"
+	"github.com/galaxy-future/costpilot/internal/data"
+	"github.com/galaxy-future/costpilot/internal/providers/types"
+	"github.com/galaxy-future/costpilot/tools"
 )
 
 var (
-	s             TemplateService
+	s             CostTemplate
 	daysBilling   sync.Map
 	monthsBilling sync.Map
 )
@@ -53,7 +53,7 @@ func TestMain(m *testing.M) {
 		}
 	}
 
-	s = TemplateService{
+	s = CostTemplate{
 		DaysBilling:   &daysBilling,
 		MonthsBilling: &monthsBilling,
 		bp:            tools.NewBillDatePilot(),

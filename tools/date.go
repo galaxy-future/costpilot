@@ -147,7 +147,7 @@ func (p *BillingDatePilot) GetPreviousYear(curYear ...string) string {
 }
 
 // GetTargetYearData 获取目标年的年/月/日数据
-//offset : negative value for the year before ,vice versa
+// offset : negative value for the year before ,vice versa
 func (p *BillingDatePilot) GetTargetYearData(data []string, offset int) []string {
 	if len(data) == 0 {
 		return []string{}

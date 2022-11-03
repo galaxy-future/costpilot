@@ -1,4 +1,4 @@
-package services
+package databean
 
 import (
 	"context"
@@ -7,12 +7,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/galayx-future/costpilot/internal/providers"
-	"github.com/galayx-future/costpilot/internal/types"
-	"github.com/galayx-future/costpilot/tools"
+	"github.com/galaxy-future/costpilot/internal/services/datareader"
+
+	"github.com/galaxy-future/costpilot/internal/providers"
+	"github.com/galaxy-future/costpilot/internal/types"
+	"github.com/galaxy-future/costpilot/tools"
 )
 
-type ViewService struct {
+type CostDataBean struct {
 	billingDate   tools.BillingDate
 	daysBilling   sync.Map
 	monthsBilling sync.Map
@@ -23,8 +25,8 @@ type ViewService struct {
 	pipeLineFunc []func(context.Context) error
 }
 
-func NewViewService(a types.CloudAccount, t time.Time) *ViewService {
-	s := &ViewService{
+func NewCostDataBean(a types.CloudAccount, t time.Time) *CostDataBean {
+	s := &CostDataBean{
 		billingDate: tools.BillingDate{},
 		bp:          tools.NewBillDatePilot().SetNowT(t),
 	}
@@ -34,7 +36,7 @@ func NewViewService(a types.CloudAccount, t time.Time) *ViewService {
 }
 
 // initProvider
-func (s *ViewService) initProvider(a types.CloudAccount) *ViewService {
+func (s *CostDataBean) initProvider(a types.CloudAccount) *CostDataBean {
 	var err error
 	s.provider, err = providers.GetProvider(a.Provider, a.AK, a.SK, a.RegionID)
 	if err != nil {
@@ -44,12 +46,12 @@ func (s *ViewService) initProvider(a types.CloudAccount) *ViewService {
 }
 
 // GetBillingMap
-func (s *ViewService) GetBillingMap() (*sync.Map, *sync.Map) {
+func (s *CostDataBean) GetBillingMap() (*sync.Map, *sync.Map) {
 	return &s.monthsBilling, &s.daysBilling
 }
 
-//getRecent15DaysBilling today is not included
-func (s *ViewService) getRecent15DaysBilling(ctx context.Context) error {
+// getRecent15DaysBilling today is not included
+func (s *CostDataBean) getRecent15DaysBilling(ctx context.Context) error {
 	billingDate := s.bp.GetRecentXDaysBillingDate(15)
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {
 		return err
@@ -59,7 +61,7 @@ func (s *ViewService) getRecent15DaysBilling(ctx context.Context) error {
 }
 
 // getPreviousYearRecent15DaysBilling
-func (s *ViewService) getPreviousYearRecent15DaysBilling(ctx context.Context) error {
+func (s *CostDataBean) getPreviousYearRecent15DaysBilling(ctx context.Context) error {
 	billingDate := s.bp.GetRecentXDaysBillingDate(15)
 	days := billingDate.Days
 	lastYearDays := s.bp.GetTargetYearData(days, -1)
@@ -73,7 +75,7 @@ func (s *ViewService) getPreviousYearRecent15DaysBilling(ctx context.Context) er
 
 // getLast12MonthsBilling
 // current month is included, but data of today is not included
-func (s *ViewService) getRecent24MonthsBilling(ctx context.Context) error {
+func (s *CostDataBean) getRecent24MonthsBilling(ctx context.Context) error {
 	billingDate := s.bp.GetRecentXMonthsBillingDate(24)
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {
 		return err
@@ -84,7 +86,7 @@ func (s *ViewService) getRecent24MonthsBilling(ctx context.Context) error {
 
 // getRecentYearMonthsBilling
 // if today is 01-01, current year is last year
-func (s *ViewService) getRecentYearMonthsBilling(ctx context.Context) error {
+func (s *CostDataBean) getRecentYearMonthsBilling(ctx context.Context) error {
 	billingDate := s.bp.GetRecentYearBillingDate()
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {
 		return err
@@ -95,7 +97,7 @@ func (s *ViewService) getRecentYearMonthsBilling(ctx context.Context) error {
 
 // getPreviousYearMonthsBilling
 // if today is 01-01, last year is before last year
-func (s *ViewService) getPreviousYearMonthsBilling(ctx context.Context) error {
+func (s *CostDataBean) getPreviousYearMonthsBilling(ctx context.Context) error {
 	billingDate := s.bp.GetPreviousYearBillingDate()
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {
 		return err
@@ -105,7 +107,7 @@ func (s *ViewService) getPreviousYearMonthsBilling(ctx context.Context) error {
 }
 
 // getRecentDayBilling
-func (s *ViewService) getRecentDayBilling(ctx context.Context) error {
+func (s *CostDataBean) getRecentDayBilling(ctx context.Context) error {
 	billingDate := s.bp.GetRecentDayBillingDate()
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {
 		return err
@@ -115,7 +117,7 @@ func (s *ViewService) getRecentDayBilling(ctx context.Context) error {
 }
 
 // getPreviousDayDayBilling
-func (s *ViewService) getPreviousDayDayBilling(ctx context.Context) error {
+func (s *CostDataBean) getPreviousDayDayBilling(ctx context.Context) error {
 	billingDate := s.bp.GetPreviousDayBillingDate()
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {
 		return err
@@ -125,11 +127,11 @@ func (s *ViewService) getPreviousDayDayBilling(ctx context.Context) error {
 }
 
 // getRecentDayBillingWithProduct
-func (s *ViewService) getRecentDayBillingWithProduct(ctx context.Context) error {
+func (s *CostDataBean) getRecentDayBillingWithProduct(ctx context.Context) error {
 	billingDate := s.bp.GetRecentDayBillingDate()
 	day := billingDate.Days[0]
-	costSvc := NewCostService(s.provider)
-	dayBilling, err := costSvc.GetDailyCost(ctx, day, true)
+	costDataReader := datareader.NewCostDataReader(s.provider)
+	dayBilling, err := costDataReader.GetDailyCost(ctx, day, true)
 	if err != nil {
 		return err
 	}
@@ -139,11 +141,11 @@ func (s *ViewService) getRecentDayBillingWithProduct(ctx context.Context) error 
 }
 
 // getRecentMonthBillingWithProduct
-func (s *ViewService) getRecentMonthBillingWithProduct(ctx context.Context) error {
+func (s *CostDataBean) getRecentMonthBillingWithProduct(ctx context.Context) error {
 	monthBillingDate := s.bp.GetRecentMonthBillingDate(true)
-	costSvc := NewCostService(s.provider)
+	costDataReader := datareader.NewCostDataReader(s.provider)
 	if len(monthBillingDate.Months) != 0 {
-		monthsBilling, err := costSvc.GetMonthsCost(ctx, true, monthBillingDate.Months...)
+		monthsBilling, err := costDataReader.GetMonthsCost(ctx, true, monthBillingDate.Months...)
 		if err != nil {
 			return err
 		}
@@ -154,7 +156,7 @@ func (s *ViewService) getRecentMonthBillingWithProduct(ctx context.Context) erro
 	}
 
 	if len(monthBillingDate.Days) != 0 {
-		daysBilling, err := costSvc.GetDaysCost(ctx, true, monthBillingDate.Days...)
+		daysBilling, err := costDataReader.GetDaysCost(ctx, true, monthBillingDate.Days...)
 		if err != nil {
 			return err
 		}
@@ -168,7 +170,7 @@ func (s *ViewService) getRecentMonthBillingWithProduct(ctx context.Context) erro
 }
 
 // getRecentQuarterBilling
-func (s *ViewService) getRecentQuarterBilling(ctx context.Context) error {
+func (s *CostDataBean) getRecentQuarterBilling(ctx context.Context) error {
 	billingDate := s.bp.GetRecentQuarterBillingDate(true)
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {
 		return err
@@ -178,7 +180,7 @@ func (s *ViewService) getRecentQuarterBilling(ctx context.Context) error {
 }
 
 // getPreviousQuarterBilling
-func (s *ViewService) getPreviousQuarterBilling(ctx context.Context) error {
+func (s *CostDataBean) getPreviousQuarterBilling(ctx context.Context) error {
 	billingDate := s.bp.GetRecentQuarterBillingDate(true)
 	billingDate = s.bp.ConvBillingDate2PreviousQuarter(billingDate)
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {
@@ -189,7 +191,7 @@ func (s *ViewService) getPreviousQuarterBilling(ctx context.Context) error {
 }
 
 // getPreviousMouthBilling
-func (s *ViewService) getPreviousMouthBilling(ctx context.Context) error {
+func (s *CostDataBean) getPreviousMouthBilling(ctx context.Context) error {
 	billingDate := s.bp.GetRecentMonthBillingDate(true)
 	billingDate = s.bp.ConvBillingDate2PreviousMonth(billingDate)
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {
@@ -200,16 +202,16 @@ func (s *ViewService) getPreviousMouthBilling(ctx context.Context) error {
 }
 
 // AddBillingDate
-func (s *ViewService) AddBillingDate(ctx context.Context, billingDate tools.BillingDate) error {
+func (s *CostDataBean) AddBillingDate(ctx context.Context, billingDate tools.BillingDate) error {
 	s.billingDate.Months = tools.Union(s.billingDate.Months, billingDate.Months)
 	s.billingDate.Days = tools.Union(s.billingDate.Days, billingDate.Days)
 	return nil
 }
 
 // FillBillings
-func (s *ViewService) FillBillings(ctx context.Context) error {
+func (s *CostDataBean) FillBillings(ctx context.Context) error {
 	b := s.billingDate
-	costSvc := NewCostService(s.provider)
+	costDataReader := datareader.NewCostDataReader(s.provider)
 	var months, days []string
 	for _, v := range b.Months {
 		if _, ok := s.monthsBilling.Load(v); !ok { // skip if key exist
@@ -227,11 +229,11 @@ func (s *ViewService) FillBillings(ctx context.Context) error {
 	sort.Slice(days, func(i, j int) bool {
 		return days[i] < days[j]
 	})
-	monthsBilling, err := costSvc.GetMonthsCost(ctx, false, months...)
+	monthsBilling, err := costDataReader.GetMonthsCost(ctx, false, months...)
 	if err != nil {
 		return err
 	}
-	daysBilling, err := costSvc.GetDaysCost(ctx, false, days...)
+	daysBilling, err := costDataReader.GetDaysCost(ctx, false, days...)
 	if err != nil {
 		return err
 	}
@@ -246,7 +248,7 @@ func (s *ViewService) FillBillings(ctx context.Context) error {
 }
 
 // GetCostAnalysisPipeLine
-func (s *ViewService) GetCostAnalysisPipeLine() []func(context.Context) error {
+func (s *CostDataBean) GetCostAnalysisPipeLine() []func(context.Context) error {
 	return []func(context.Context) error{
 		s.getRecent24MonthsBilling,
 		s.getRecentYearMonthsBilling,
@@ -266,7 +268,7 @@ func (s *ViewService) GetCostAnalysisPipeLine() []func(context.Context) error {
 }
 
 // RunPipeline
-func (s *ViewService) RunPipeline(ctx context.Context) error {
+func (s *CostDataBean) RunPipeline(ctx context.Context) error {
 	var err error
 	for _, f := range s.GetCostAnalysisPipeLine() {
 		err = f(ctx)
