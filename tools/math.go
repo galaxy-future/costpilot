@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/galayx-future/costpilot/internal/data"
+	"github.com/galaxy-future/costpilot/internal/data"
 
 	"github.com/shopspring/decimal"
 	"github.com/spf13/cast"

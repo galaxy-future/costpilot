@@ -1,6 +1,6 @@
 package data
 
-import "github.com/galayx-future/costpilot/internal/constants/cloud"
+import "github.com/galaxy-future/costpilot/internal/constants/cloud"
 
 type ItemInProductBilling struct {
 	PipCode          string                 `json:"pip_code"`
