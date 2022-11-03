@@ -3,8 +3,8 @@ package services
 import (
 	"log"
 
-	"github.com/galayx-future/costpilot/internal/config"
-	"github.com/galayx-future/costpilot/internal/types"
+	"github.com/galaxy-future/costpilot/internal/config"
+	"github.com/galaxy-future/costpilot/internal/types"
 )
 
 type AccountService struct {
