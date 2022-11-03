@@ -1,4 +1,4 @@
-module github.com/galayx-future/costpilot
+module github.com/galaxy-future/costpilot
 
 go 1.17
 

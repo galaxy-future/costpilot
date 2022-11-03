@@ -7,11 +7,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/galayx-future/costpilot/internal/services/datareader"
+	"github.com/galaxy-future/costpilot/internal/services/datareader"
 
-	"github.com/galayx-future/costpilot/internal/providers"
-	"github.com/galayx-future/costpilot/internal/types"
-	"github.com/galayx-future/costpilot/tools"
+	"github.com/galaxy-future/costpilot/internal/providers"
+	"github.com/galaxy-future/costpilot/internal/types"
+	"github.com/galaxy-future/costpilot/tools"
 )
 
 type CostDataBean struct {
