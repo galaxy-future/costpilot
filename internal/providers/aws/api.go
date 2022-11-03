@@ -3,8 +3,8 @@ package aws
 import (
 	"context"
 
-	"github.com/galayx-future/costpilot/internal/constants/cloud"
-	"github.com/galayx-future/costpilot/internal/providers/types"
+	"github.com/galaxy-future/costpilot/internal/constants/cloud"
+	"github.com/galaxy-future/costpilot/internal/providers/types"
 )
 
 type AWSCloud struct {

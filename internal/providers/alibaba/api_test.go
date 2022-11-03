@@ -7,7 +7,7 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/bssopenapi"
-	"github.com/galayx-future/costpilot/internal/providers/types"
+	"github.com/galaxy-future/costpilot/internal/providers/types"
 )
 
 var _AK = "ak_test_123"

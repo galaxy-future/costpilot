@@ -6,11 +6,11 @@ import (
 	"log"
 	"os"
 
-	"github.com/galayx-future/costpilot/internal/constants/cloud"
+	"github.com/galaxy-future/costpilot/internal/constants/cloud"
 
 	"github.com/pkg/errors"
 
-	"github.com/galayx-future/costpilot/internal/types"
+	"github.com/galaxy-future/costpilot/internal/types"
 	"gopkg.in/yaml.v2"
 )
 

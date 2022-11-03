@@ -4,9 +4,9 @@ import (
 	"context"
 	"os"
 
-	"github.com/galayx-future/costpilot/internal/domain"
+	"github.com/galaxy-future/costpilot/internal/domain"
 
-	"github.com/galayx-future/costpilot/internal/config"
+	"github.com/galaxy-future/costpilot/internal/config"
 )
 
 func main() {

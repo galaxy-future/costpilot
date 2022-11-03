@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/galayx-future/costpilot/internal/providers/aws"
-	"github.com/galayx-future/costpilot/internal/providers/baidu"
-	"github.com/galayx-future/costpilot/internal/providers/huawei"
-	"github.com/galayx-future/costpilot/internal/providers/tencent"
+	"github.com/galaxy-future/costpilot/internal/providers/aws"
+	"github.com/galaxy-future/costpilot/internal/providers/baidu"
+	"github.com/galaxy-future/costpilot/internal/providers/huawei"
+	"github.com/galaxy-future/costpilot/internal/providers/tencent"
 
-	"github.com/galayx-future/costpilot/internal/constants/cloud"
-	"github.com/galayx-future/costpilot/internal/providers/alibaba"
-	"github.com/galayx-future/costpilot/internal/providers/types"
+	"github.com/galaxy-future/costpilot/internal/constants/cloud"
+	"github.com/galaxy-future/costpilot/internal/providers/alibaba"
+	"github.com/galaxy-future/costpilot/internal/providers/types"
 	"github.com/spf13/cast"
 )
 
