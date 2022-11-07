@@ -33,7 +33,7 @@ func New(ak, sk, regionId string) (*TencentCloud, error) {
 }
 
 // ProviderType
-func (*TencentCloud) ProviderType() string {
+func (*TencentCloud) ProviderType() cloud.Provider {
 	return cloud.TencentCloud
 }
 
@@ -48,7 +48,7 @@ func (p *TencentCloud) QueryAccountBill(_ context.Context, param types.QueryAcco
 	request.NeedRecordNum = &needNum
 	request.Limit = &_maxPageSize
 	request.Offset = &offset
-	request.NeedRecordNum = common.Int64Ptr(1) //1 for needing total ,0 for not
+	request.NeedRecordNum = common.Int64Ptr(1) // 1 for needing total ,0 for not
 
 	// 根据不同的账单周期粒度组装数据
 	switch param.Granularity {
@@ -70,7 +70,7 @@ func (p *TencentCloud) QueryAccountBill(_ context.Context, param types.QueryAcco
 	// 分页直到获取全部
 	var allBillList []*billing.BillDetail
 	for {
-		limiter := limiter.Limiters.GetLimiter(p.ProviderType()+"-"+"DescribeBillDetail", 3)
+		limiter := limiter.Limiters.GetLimiter(p.ProviderType().String()+"-"+"DescribeBillDetail", 3)
 		limiter.Take()
 		response, err := p.billingClient.DescribeBillDetail(request)
 		if err != nil {
@@ -213,4 +213,19 @@ func convCurrency(priceUnit string) (currency string) {
 		currency = "USD"
 	}
 	return
+}
+
+func (p *TencentCloud) DescribeMetricList(ctx context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (p *TencentCloud) DescribeInstanceAttribute(ctx context.Context, request types.DescribeInstanceAttributeRequest) (types.DescribeInstanceAttribute, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (p *TencentCloud) DescribeRegions(ctx context.Context, request types.DescribeRegionsRequest) (types.DescribeRegions, error) {
+	// TODO implement me
+	panic("implement me")
 }

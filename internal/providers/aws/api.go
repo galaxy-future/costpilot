@@ -32,7 +32,7 @@ func New(AK, SK, regionId string) (*AWSCloud, error) {
 }
 
 // ProviderType
-func (*AWSCloud) ProviderType() string {
+func (*AWSCloud) ProviderType() cloud.Provider {
 	return cloud.AWSCloud
 }
 
@@ -219,4 +219,19 @@ func IsValidMonth(month string) bool {
 		return false
 	}
 	return true
+}
+
+func (p *AWSCloud) DescribeMetricList(ctx context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (p *AWSCloud) DescribeInstanceAttribute(ctx context.Context, request types.DescribeInstanceAttributeRequest) (types.DescribeInstanceAttribute, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (p *AWSCloud) DescribeRegions(ctx context.Context, request types.DescribeRegionsRequest) (types.DescribeRegions, error) {
+	// TODO implement me
+	panic("implement me")
 }
