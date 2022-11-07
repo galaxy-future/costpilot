@@ -57,52 +57,6 @@ func (s *UtilizationDataReader) GetDailyCpuUtilization(ctx context.Context, day 
 		})
 	}
 	return result, nil
-	//
-	// resp2, err2 := s._provider.DescribeMetricList(ctx, types.DescribeMetricListRequest{
-	// 	MetricName: types.MetricItemMemoryUsedUtilization,
-	// 	Period:     "86400", // 一天
-	// 	StartTime:  startTime,
-	// 	EndTime:    endTime,
-	// })
-	// if err2 != nil {
-	// 	return data.ResourceUtilization{}, err
-	// }
-	// for _, v := range resp2.List {
-	// 	item := sampleMap[v.Instance]
-	// 	item.MemoryUtilization = v.Average
-	// }
-	// if len(sampleMap) == 0 {
-	// 	return sampleMap, nil
-	// }
-	//
-	// for instanceId, _ := range sampleMap {
-	// 	item := sampleMap[instanceId]
-	// 	resp3, err3 := s._provider.DescribeInstanceAttribute(ctx, types.DescribeInstanceAttributeRequest{InstanceId: instanceId})
-	// 	if err3 != nil {
-	// 		return result, err
-	// 	}
-	// 	item.RegionId = resp3.InstanceId
-	// 	item.SubscriptionType = resp3.SubscriptionType
-	// }
-	//
-	// regionIdMap := make(map[string]string)
-	// resp4, err4 := s._provider.DescribeRegions(ctx, types.DescribeRegionsRequest{
-	// 	ResourceType: types.ResourceTypeInstance,
-	// 	Language:     types.RegionLanguageZHCN,
-	// })
-	// if err4 != nil {
-	// 	return result, err
-	// }
-	// for _, region := range resp4.List {
-	// 	regionIdMap[region.RegionId] = region.LocalName
-	// }
-	//
-	// for _, sample := range sampleMap {
-	// 	if regionName, ok := regionIdMap[sample.RegionId]; ok {
-	// 		sample.RegionName = regionName
-	// 	}
-	// }
-	// result.Utilization[] =
 }
 
 func (s *UtilizationDataReader) GetDaysCpuUtilization(ctx context.Context, days ...string) ([]data.DailyCpuUtilization, error) {
@@ -210,7 +164,6 @@ func (s *UtilizationDataReader) GetDaysMemoryUtilization(ctx context.Context, da
 }
 
 func (s *UtilizationDataReader) GetInstanceList(ctx context.Context, instanceIdList ...string) ([]data.InstanceDetail, error) {
-	// TODO 应该先判断是否有批量拿的接口
 	result := make([]data.InstanceDetail, 0, len(instanceIdList))
 	for _, i := range instanceIdList {
 		resp, err := s._provider.DescribeInstanceAttribute(ctx, types.DescribeInstanceAttributeRequest{

@@ -29,7 +29,6 @@ type UtilizationTemplate struct {
 func NewUtilization(t time.Time) *UtilizationTemplate {
 	return &UtilizationTemplate{
 		bp: tools.NewBillDatePilot().SetNowT(t),
-		// CpuUtilization: make(sync.Map),
 	}
 }
 
@@ -169,7 +168,7 @@ func (s *UtilizationTemplate) getStatistics() []template.UtilizeAnalysisStatisti
 
 	return []template.UtilizeAnalysisStatisticsItem{
 		{
-			SCycle:     "CPU平均利用率",
+			SCycle:     "CPU 平均利用率",
 			SAmount:    s.averagingCpuUsedRatio(yesterday),
 			SUnit:      "%",
 			SPreCycle:  "前日数据",
@@ -384,7 +383,7 @@ func (s *UtilizationTemplate) Assemble(_ context.Context) template.UtilizeAnalys
 	utilizeAnalysisByDay.CpuTrend = &template.UtilizeAnalysisCpuTrend{
 		Chart: template.ChartCpuTrend{
 			ID:     "cpuTrend",
-			Title:  "CPU利用率分布",
+			Title:  "CPU 利用率分布",
 			XData:  s.getLast14Days(),
 			Series: s.getCpuTrendSeries(),
 			YTitle: []string{"机器数 (个)"},
