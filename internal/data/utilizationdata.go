@@ -4,19 +4,6 @@ import (
 	"github.com/galayx-future/costpilot/internal/constants/cloud"
 )
 
-// type ResourceUtilization struct {
-// 	InstanceId        string
-// 	CpuUtilization    float64 // CPU使用率
-// 	MemoryUtilization float64 // 内存使用率
-// }
-//
-// type DailyResourceUtilization struct {
-// 	Day         string                                            `json:"day"` // 20220101
-// 	Utilization map[cloud.Provider]map[string]ResourceUtilization `json:"utilization"`
-// }
-
-// ---------------- 重构 -----------------
-
 type InstanceCpuUtilization struct {
 	InstanceId      string
 	UsedUtilization float64 // CPU使用率
