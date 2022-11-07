@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/galayx-future/costpilot/internal/providers/alibaba"
+	"github.com/galaxy-future/costpilot/internal/providers/alibaba"
 )
 
 func TestUtilizationDataReader_GetAllRegionMap(t *testing.T) {

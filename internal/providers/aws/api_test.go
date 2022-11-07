@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/galayx-future/costpilot/internal/providers/types"
+	"github.com/galaxy-future/costpilot/internal/providers/types"
 )
 
 var _AK = ""

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/galayx-future/costpilot/tools"
+	"github.com/galaxy-future/costpilot/tools"
 	"github.com/stretchr/testify/assert"
 )
 

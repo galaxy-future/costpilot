@@ -7,15 +7,15 @@ import (
 	"time"
 
 	"github.com/alibabacloud-go/tea/tea"
-	"github.com/galayx-future/costpilot/tools"
+	"github.com/galaxy-future/costpilot/tools"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/costexplorer"
 	explorerTypes "github.com/aws/aws-sdk-go-v2/service/costexplorer/types"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/galayx-future/costpilot/internal/constants/cloud"
-	"github.com/galayx-future/costpilot/internal/providers/types"
+	"github.com/galaxy-future/costpilot/internal/constants/cloud"
+	"github.com/galaxy-future/costpilot/internal/providers/types"
 )
 
 type AWSCloud struct {

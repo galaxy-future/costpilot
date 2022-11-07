@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/galayx-future/costpilot/tools/limiter"
+	"github.com/galaxy-future/costpilot/tools/limiter"
 
 	"github.com/alibabacloud-go/tea/tea"
-	"github.com/galayx-future/costpilot/internal/constants/cloud"
-	"github.com/galayx-future/costpilot/internal/providers/types"
+	"github.com/galaxy-future/costpilot/internal/constants/cloud"
+	"github.com/galaxy-future/costpilot/internal/providers/types"
 	"github.com/pkg/errors"
 	billing "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/billing/v20180709"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"

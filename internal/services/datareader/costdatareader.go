@@ -5,10 +5,10 @@ import (
 	"log"
 	"time"
 
-	"github.com/galayx-future/costpilot/internal/data"
-	"github.com/galayx-future/costpilot/internal/providers"
-	"github.com/galayx-future/costpilot/internal/providers/types"
-	"github.com/galayx-future/costpilot/tools"
+	"github.com/galaxy-future/costpilot/internal/data"
+	"github.com/galaxy-future/costpilot/internal/providers"
+	"github.com/galaxy-future/costpilot/internal/providers/types"
+	"github.com/galaxy-future/costpilot/tools"
 	"github.com/spf13/cast"
 	"golang.org/x/sync/errgroup"
 )

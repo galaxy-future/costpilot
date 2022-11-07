@@ -3,7 +3,7 @@ package types
 import (
 	"time"
 
-	"github.com/galayx-future/costpilot/internal/constants/cloud"
+	"github.com/galaxy-future/costpilot/internal/constants/cloud"
 )
 
 type (

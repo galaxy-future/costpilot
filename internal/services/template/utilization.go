@@ -8,11 +8,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/galayx-future/costpilot/internal/constants"
-	"github.com/galayx-future/costpilot/internal/constants/cloud"
-	"github.com/galayx-future/costpilot/internal/data"
-	"github.com/galayx-future/costpilot/internal/template"
-	"github.com/galayx-future/costpilot/tools"
+	"github.com/galaxy-future/costpilot/internal/constants"
+	"github.com/galaxy-future/costpilot/internal/constants/cloud"
+	"github.com/galaxy-future/costpilot/internal/data"
+	"github.com/galaxy-future/costpilot/internal/template"
+	"github.com/galaxy-future/costpilot/tools"
 	"github.com/spf13/cast"
 )
 

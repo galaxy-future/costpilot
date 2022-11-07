@@ -1,7 +1,7 @@
 package data
 
 import (
-	"github.com/galayx-future/costpilot/internal/constants/cloud"
+	"github.com/galaxy-future/costpilot/internal/constants/cloud"
 )
 
 type InstanceCpuUtilization struct {

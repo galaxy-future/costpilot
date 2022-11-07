@@ -6,13 +6,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/galayx-future/costpilot/internal/services/databean"
-	"github.com/galayx-future/costpilot/internal/services/template"
+	"github.com/galaxy-future/costpilot/internal/services/databean"
+	"github.com/galaxy-future/costpilot/internal/services/template"
 
-	"github.com/galayx-future/costpilot/internal/constants/cloud"
+	"github.com/galaxy-future/costpilot/internal/constants/cloud"
 
-	"github.com/galayx-future/costpilot/internal/services"
-	"github.com/galayx-future/costpilot/internal/types"
+	"github.com/galaxy-future/costpilot/internal/services"
+	"github.com/galaxy-future/costpilot/internal/types"
 	"github.com/pkg/errors"
 )
 

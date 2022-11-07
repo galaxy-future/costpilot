@@ -8,18 +8,18 @@ import (
 	"sync"
 	"time"
 
-	"github.com/galayx-future/costpilot/internal/constants"
-	"github.com/galayx-future/costpilot/internal/constants/cloud"
-	"github.com/galayx-future/costpilot/internal/data"
-	"github.com/galayx-future/costpilot/internal/providers/types"
-	"github.com/galayx-future/costpilot/internal/template"
-	"github.com/galayx-future/costpilot/tools"
+	"github.com/galaxy-future/costpilot/internal/constants"
+	"github.com/galaxy-future/costpilot/internal/constants/cloud"
+	"github.com/galaxy-future/costpilot/internal/data"
+	"github.com/galaxy-future/costpilot/internal/providers/types"
+	"github.com/galaxy-future/costpilot/internal/template"
+	"github.com/galaxy-future/costpilot/tools"
 	"github.com/spf13/cast"
 )
 
 type CostTemplate struct {
-	DaysBilling   *sync.Map //key : day , val : data.DailyBilling
-	MonthsBilling *sync.Map //key : month , val : data.MonthlyBilling
+	DaysBilling   *sync.Map // key : day , val : data.DailyBilling
+	MonthsBilling *sync.Map // key : month , val : data.MonthlyBilling
 
 	bp           *tools.BillingDatePilot
 	analysisData template.AnalysisData
@@ -355,7 +355,7 @@ func (s *CostTemplate) getDayItemInSeries() []template.ItemInSeries {
 			Name:       "成本(上一年同期)",
 			Type:       "bar",
 			YAxisIndex: 0,
-			Data:       s.amountInLastXDays(15, false), //去年同期 14 天的每日成本
+			Data:       s.amountInLastXDays(15, false), // 去年同期 14 天的每日成本
 		},
 		template.ItemInSeries{
 			Name:       "环比上一天",
@@ -378,12 +378,12 @@ func (s *CostTemplate) getDayItemInSeries() []template.ItemInSeries {
 	for i := 1; i < len(r[1].Data); i++ {
 		yrOnyrRatios = append(yrOnyrRatios, tools.RatioString(r[1].Data[i], r[0].Data[i]))
 	}
-	r[2].Data = chainRatios  //环比上一天 ["22.34", ... "45.67"]
-	r[3].Data = yrOnyrRatios //同比上一年 ["22.34", "--",... "45.67"]
+	r[2].Data = chainRatios  // 环比上一天 ["22.34", ... "45.67"]
+	r[3].Data = yrOnyrRatios // 同比上一年 ["22.34", "--",... "45.67"]
 
-	r[0].Data = r[0].Data[1:] //成本(本期),只需保留 14 个值
-	r[1].Data = r[1].Data[1:] //成本(上一年同期),只需保留 14 个值
-	//r[3].Data = r[3].Data[1:] //同比上一年,只需保留 14 个值
+	r[0].Data = r[0].Data[1:] // 成本(本期),只需保留 14 个值
+	r[1].Data = r[1].Data[1:] // 成本(上一年同期),只需保留 14 个值
+	// r[3].Data = r[3].Data[1:] //同比上一年,只需保留 14 个值
 
 	return r
 }
@@ -399,7 +399,7 @@ func (s *CostTemplate) getMonthItemInSeries() []template.ItemInSeries {
 			Name:       "成本(上一年同期)",
 			Type:       "bar",
 			YAxisIndex: 0,
-			Data:       s.amountInLastXMonths(13, false), //去年同期 12 月的每月成本
+			Data:       s.amountInLastXMonths(13, false), // 去年同期 12 月的每月成本
 		},
 		template.ItemInSeries{
 			Name:       "环比上一月",
@@ -427,12 +427,12 @@ func (s *CostTemplate) getMonthItemInSeries() []template.ItemInSeries {
 		}
 		yrOnyrRatios = append(yrOnyrRatios, tools.RatioString(r[1].Data[i-1], r[0].Data[i])) // (current - previous)/previous
 	}
-	r[2].Data = chainRatios  //环比上一月 ["22.34", ... "45.67"]
-	r[3].Data = yrOnyrRatios //同比上一年 ["22.34", "--",... "45.67"]
+	r[2].Data = chainRatios  // 环比上一月 ["22.34", ... "45.67"]
+	r[3].Data = yrOnyrRatios // 同比上一年 ["22.34", "--",... "45.67"]
 
-	r[0].Data = r[0].Data[1:] //成本(本期),只需保留 14 个值
-	//r[1].Data = r[1].Data[1:] //成本(上一年同期),只需保留 14 个值
-	//r[3].Data = r[3].Data[1:] //同比上一年,只需保留 14 个值
+	r[0].Data = r[0].Data[1:] // 成本(本期),只需保留 14 个值
+	// r[1].Data = r[1].Data[1:] //成本(上一年同期),只需保留 14 个值
+	// r[3].Data = r[3].Data[1:] //同比上一年,只需保留 14 个值
 
 	return r
 }
@@ -537,7 +537,7 @@ func (s *CostTemplate) ExportCostAnalysis(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	//log.Printf("I! template content:%s", c)
+	// log.Printf("I! template content:%s", c)
 	err = ioutil.WriteFile(constants.GetJsDataPath(), []byte(c), 0644)
 	if err != nil {
 		return err
