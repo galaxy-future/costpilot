@@ -48,7 +48,7 @@ func Test_convPretaxAmount(t *testing.T) {
 var (
 	_AK = ""
 	_SK = ""
-	//_regionId = "ap-guangzhou"
+	// _regionId = "ap-guangzhou"
 )
 
 func TestTencentCloud_QueryAccountBill(t *testing.T) {

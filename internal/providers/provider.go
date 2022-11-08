@@ -19,8 +19,11 @@ import (
 var clientMap sync.Map
 
 type Provider interface {
-	ProviderType() string
+	ProviderType() cloud.Provider
 	QueryAccountBill(ctx context.Context, request types.QueryAccountBillRequest) (types.DataInQueryAccountBill, error)
+	DescribeMetricList(context.Context, types.DescribeMetricListRequest) (types.DescribeMetricList, error)
+	DescribeRegions(context.Context, types.DescribeRegionsRequest) (types.DescribeRegions, error)
+	DescribeInstanceAttribute(context.Context, types.DescribeInstanceAttributeRequest) (types.DescribeInstanceAttribute, error)
 }
 
 // GetProvider get provider

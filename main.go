@@ -23,6 +23,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	b := domain.NewResourceUtilizationDomain()
+	if err := b.RunPipeline(ctx); err != nil {
+		os.Exit(1)
+	}
+
 	if err := output(); err != nil {
 		os.Exit(1)
 	}

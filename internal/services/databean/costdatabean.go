@@ -56,7 +56,7 @@ func (s *CostDataBean) getRecent15DaysBilling(ctx context.Context) error {
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {
 		return err
 	}
-	//log.Printf("I! getRecent15DaysBilling done")
+	// log.Printf("I! getRecent15DaysBilling done")
 	return nil
 }
 
@@ -69,7 +69,7 @@ func (s *CostDataBean) getPreviousYearRecent15DaysBilling(ctx context.Context) e
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {
 		return err
 	}
-	//log.Printf("I! getPreviousYearRecent15DaysBilling done")
+	// log.Printf("I! getPreviousYearRecent15DaysBilling done")
 	return nil
 }
 
@@ -80,7 +80,7 @@ func (s *CostDataBean) getRecent24MonthsBilling(ctx context.Context) error {
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {
 		return err
 	}
-	//log.Printf("I! getLast12MonthsBilling done")
+	// log.Printf("I! getLast12MonthsBilling done")
 	return nil
 }
 
@@ -91,7 +91,7 @@ func (s *CostDataBean) getRecentYearMonthsBilling(ctx context.Context) error {
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {
 		return err
 	}
-	//log.Printf("I! getRecentYearMonthsBilling done")
+	// log.Printf("I! getRecentYearMonthsBilling done")
 	return nil
 }
 
@@ -102,7 +102,7 @@ func (s *CostDataBean) getPreviousYearMonthsBilling(ctx context.Context) error {
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {
 		return err
 	}
-	//log.Printf("I! getPreviousYearMonthsBilling done")
+	// log.Printf("I! getPreviousYearMonthsBilling done")
 	return nil
 }
 
@@ -112,7 +112,7 @@ func (s *CostDataBean) getRecentDayBilling(ctx context.Context) error {
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {
 		return err
 	}
-	//log.Printf("I! getRecentDayBilling done")
+	// log.Printf("I! getRecentDayBilling done")
 	return nil
 }
 
@@ -122,7 +122,7 @@ func (s *CostDataBean) getPreviousDayDayBilling(ctx context.Context) error {
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {
 		return err
 	}
-	//log.Printf("I! getPreviousDayDayBilling done")
+	// log.Printf("I! getPreviousDayDayBilling done")
 	return nil
 }
 
@@ -135,7 +135,7 @@ func (s *CostDataBean) getRecentDayBillingWithProduct(ctx context.Context) error
 	if err != nil {
 		return err
 	}
-	s.daysBilling.Store(dayBilling.Day, dayBilling) //cover old data
+	s.daysBilling.Store(dayBilling.Day, dayBilling) // cover old data
 	log.Printf("I! getRecentDayBillingWithProduct done")
 	return nil
 }
@@ -150,7 +150,7 @@ func (s *CostDataBean) getRecentMonthBillingWithProduct(ctx context.Context) err
 			return err
 		}
 		for _, v := range monthsBilling {
-			s.monthsBilling.Store(v.Month, v) //cover old data
+			s.monthsBilling.Store(v.Month, v) // cover old data
 		}
 
 	}
@@ -175,7 +175,7 @@ func (s *CostDataBean) getRecentQuarterBilling(ctx context.Context) error {
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {
 		return err
 	}
-	//log.Printf("I! getRecentQuarterBilling done")
+	// log.Printf("I! getRecentQuarterBilling done")
 	return nil
 }
 
@@ -186,7 +186,7 @@ func (s *CostDataBean) getPreviousQuarterBilling(ctx context.Context) error {
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {
 		return err
 	}
-	//log.Printf("I! getPreviousQuarterBilling done")
+	// log.Printf("I! getPreviousQuarterBilling done")
 	return nil
 }
 
@@ -197,7 +197,7 @@ func (s *CostDataBean) getPreviousMouthBilling(ctx context.Context) error {
 	if err := s.AddBillingDate(ctx, billingDate); err != nil {
 		return err
 	}
-	//log.Printf("I! getPreviousMouthBilling done")
+	// log.Printf("I! getPreviousMouthBilling done")
 	return nil
 }
 

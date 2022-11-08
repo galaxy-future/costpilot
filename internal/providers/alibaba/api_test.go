@@ -3,6 +3,7 @@ package alibaba
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials"
@@ -10,8 +11,20 @@ import (
 	"github.com/galaxy-future/costpilot/internal/providers/types"
 )
 
-var _AK = "ak_test_123"
-var _SK = "sk_test_123"
+var (
+	_AK = "ak_test_123"
+	_SK = "sk_test_123"
+
+	cli *AlibabaCloud
+)
+
+func init() {
+	c, err := New(_AK, _SK, "cn-hangzhou")
+	if err != nil {
+		return
+	}
+	cli = c
+}
 
 func TestAlibabaCloud_QueryAccountBill(t *testing.T) {
 	type fields struct {
@@ -104,9 +117,53 @@ func TestAlibabaCloud_QueryAccountBill(t *testing.T) {
 				t.Errorf("QueryAccountBill() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			//if !reflect.DeepEqual(got, tt.want) {
+			// if !reflect.DeepEqual(got, tt.want) {
 			//	t.Errorf("QueryAccountBill() got = %v, want %v", got, tt.want)
 			t.Logf("QueryAccountBill() got = %+v", got)
 		})
 	}
+}
+
+func TestAlibabaCloud_DescribeMetricList(t *testing.T) {
+	p, err := New(_AK, _SK, "cn-shenzhen")
+	if err != nil {
+		return
+	}
+	startTime, _ := time.Parse("2006-01-02", "2022-11-02")
+	endTime, _ := time.Parse("2006-01-02", "2022-11-03")
+	t.Log(startTime.String(), endTime.String())
+	got, err := p.DescribeMetricList(nil, types.DescribeMetricListRequest{
+		MetricName: types.MetricItemMemoryUsedUtilization,
+		Period:     "86400",
+		StartTime:  startTime,
+		EndTime:    endTime,
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(got)
+}
+
+func TestAlibabaCloud_DescribeRegions(t *testing.T) {
+	got, err := cli.DescribeRegions(nil, types.DescribeRegionsRequest{
+		ResourceType: types.ResourceTypeInstance,
+		Language:     types.RegionLanguageZHCN,
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(got)
+}
+
+func TestAlibabaCloud_DescribeInstanceAttribute(t *testing.T) {
+	got, err := cli.DescribeInstanceAttribute(nil, types.DescribeInstanceAttributeRequest{
+		InstanceId: "i-wz9g67k0g3582e1z8j60",
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(got)
 }
