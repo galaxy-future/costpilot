@@ -9,12 +9,11 @@ import (
 	"time"
 
 	"github.com/galaxy-future/costpilot/internal/data"
-	"github.com/galaxy-future/costpilot/internal/services/datareader"
-	"github.com/pkg/errors"
-
 	"github.com/galaxy-future/costpilot/internal/providers"
+	"github.com/galaxy-future/costpilot/internal/services/datareader"
 	"github.com/galaxy-future/costpilot/internal/types"
 	"github.com/galaxy-future/costpilot/tools"
+	"github.com/pkg/errors"
 )
 
 type UtilizationDataBean struct {
@@ -61,9 +60,11 @@ func (s *UtilizationDataBean) initDataReader() {
 func (s *UtilizationDataBean) loadRegionMap(ctx context.Context) error {
 	regionMap, err := s.dataReader.GetAllRegionMap(ctx)
 	if err != nil {
+		log.Printf("E! loadRegionMap:%v", err)
 		return err
 	}
 	s.regionMap = regionMap
+	log.Printf("I! loadRegionMap success,len=%d", len(regionMap))
 	return nil
 }
 
@@ -111,6 +112,7 @@ func (s *UtilizationDataBean) fetchCpuUtilization(ctx context.Context) error {
 	sort.Slice(days, func(i, j int) bool {
 		return days[i] < days[j]
 	})
+	log.Printf("I! fetchCpuUtilization days: %v", days)
 
 	cpuData, err := dataReader.GetDaysCpuUtilization(ctx, days...)
 	if err != nil {
@@ -136,7 +138,7 @@ func (s *UtilizationDataBean) fetchMemoryUtilization(ctx context.Context) error 
 	sort.Slice(days, func(i, j int) bool {
 		return days[i] < days[j]
 	})
-
+	log.Printf("I! fetchMemoryUtilization days: %v", days)
 	memoryData, err := s.dataReader.GetDaysMemoryUtilization(ctx, days...)
 	if err != nil {
 		return err
@@ -152,7 +154,6 @@ func (s *UtilizationDataBean) fetchRecentInstanceList(ctx context.Context) error
 	d := s.bp.GetRecentDayBillingDate()
 	recentDay := d.Days[0]
 	v, ok := s.dailyCpu.Load(recentDay)
-	// TODO 错误优化
 	if !ok {
 		return errors.New("no instance running")
 	}
@@ -166,19 +167,24 @@ func (s *UtilizationDataBean) fetchRecentInstanceList(ctx context.Context) error
 	}
 	instanceList, err := s.dataReader.GetInstanceList(ctx, idList...)
 	if err != nil {
+		log.Printf("E! GetInstanceList:%v", err)
 		return err
 	}
+	log.Printf("I! fetchRecentInstanceList len=%d", len(instanceList))
 	for _, detail := range instanceList {
 		k := fmt.Sprintf("%s:%s", s.provider.ProviderType(), detail.InstanceId)
-		detail.RegionName = s.regionMap[detail.RegionId]
+		var regionName string
+		regionName, ok = s.regionMap[detail.RegionId]
+		if !ok {
+			regionName = "未知"
+		}
+		detail.RegionName = regionName
 		s.instancesMap.Store(k, detail)
 	}
 	return nil
 }
 
 func (s *UtilizationDataBean) GetUtilizationAnalysisPipeLine() []func(context.Context) error {
-	// - 数据日期不可选，默认是展示昨日 (RecentDay) 数据；
-	// - 前日数据 (PreviousDay) 用于计算环比；
 	return []func(context.Context) error{
 		s.loadRegionMap,
 
