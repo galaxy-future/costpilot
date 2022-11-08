@@ -78,6 +78,7 @@ func (s *UtilizationDataReader) GetDaysCpuUtilization(ctx context.Context, days 
 				if err != nil {
 					return err
 				}
+				log.Printf("I! GetDailyCpuUtilization [%v]", d)
 				result = append(result, res)
 				return nil
 			}
@@ -148,6 +149,7 @@ func (s *UtilizationDataReader) GetDaysMemoryUtilization(ctx context.Context, da
 				if err != nil {
 					return err
 				}
+				log.Printf("I! GetDailyMemoryUtilization [%s]", d)
 				result = append(result, res)
 				return nil
 			}
@@ -170,8 +172,9 @@ func (s *UtilizationDataReader) GetInstanceList(ctx context.Context, instanceIdL
 			InstanceId: i,
 		})
 		if err != nil {
-			return result, err
+			log.Printf("W! %s.DescribeInstanceAttribute:%v", s._provider.ProviderType().String(), err)
 		}
+		// 有的实例可能已经被销毁，但是为了统计仍然要放进去
 		result = append(result, data.InstanceDetail{
 			Provider:         s._provider.ProviderType(),
 			InstanceId:       i,

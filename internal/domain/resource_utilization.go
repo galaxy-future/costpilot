@@ -2,7 +2,6 @@ package domain
 
 import (
 	"context"
-	"errors"
 	"log"
 	"sync"
 	"time"
@@ -11,6 +10,7 @@ import (
 	"github.com/galaxy-future/costpilot/internal/services/databean"
 	"github.com/galaxy-future/costpilot/internal/services/template"
 	"github.com/galaxy-future/costpilot/internal/types"
+	"github.com/pkg/errors"
 )
 
 type ResourceUtilizationDomain struct {
@@ -47,12 +47,14 @@ func (s *ResourceUtilizationDomain) GetUtilizationData(ctx context.Context) erro
 		return errors.New("cloud account is not configured")
 	}
 	for _, a := range accounts {
+		log.Printf("I! start stat %s resouce utilization", a.Name)
 		dailyCpu, dailyMemory, dailyInstances, err := s.GetUtilization(ctx, a)
 		if err != nil {
 			log.Printf("E! get cloud-acount[%v] utilization error = %v", a.Name, err)
 			return err
 		}
-		s.dailyMemoryProviders = append(s.dailyCpuProviders, dailyMemory)
+		log.Printf("I! end stat %s resouce utilization", a.Name)
+		s.dailyMemoryProviders = append(s.dailyMemoryProviders, dailyMemory)
 		s.dailyCpuProviders = append(s.dailyCpuProviders, dailyCpu)
 		s.recentInstancesProviders = append(s.recentInstancesProviders, dailyInstances)
 	}
@@ -65,7 +67,7 @@ func (s *ResourceUtilizationDomain) ExportStatisticData(ctx context.Context) err
 	data := temp.Assemble(ctx)
 	err := temp.Export(ctx, data)
 	if err != nil {
-		log.Printf("E! export cost-analysis data failed: %v\n", err)
+		log.Printf("E! export utilization-analysis data failed: %v\n", err)
 		return err
 	}
 
