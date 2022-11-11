@@ -411,7 +411,7 @@ func (s *UtilizationTemplate) Assemble(_ context.Context) template.UtilizeAnalys
 	}
 
 	for i, v := range utilizeAnalysisByDay.Statistics {
-		utilizeAnalysisByDay.Statistics[i].SRatio = tools.RatioString(v.SAmount, v.SPreAmount)
+		utilizeAnalysisByDay.Statistics[i].SRatio = tools.RatioString(v.SPreAmount, v.SAmount)
 	}
 
 	return template.UtilizeAnalysis{AnalysisByDay: utilizeAnalysisByDay}
