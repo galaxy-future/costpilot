@@ -226,12 +226,23 @@ func (p *AWSCloud) DescribeMetricList(ctx context.Context, param types.DescribeM
 	panic("implement me")
 }
 
-func (p *AWSCloud) DescribeInstanceAttribute(ctx context.Context, request types.DescribeInstanceAttributeRequest) (types.DescribeInstanceAttribute, error) {
+func (p *AWSCloud) DescribeInstanceAttribute(ctx context.Context, param types.DescribeInstanceAttributeRequest) (types.DescribeInstanceAttribute, error) {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (p *AWSCloud) DescribeRegions(ctx context.Context, request types.DescribeRegionsRequest) (types.DescribeRegions, error) {
+func (p *AWSCloud) DescribeRegions(ctx context.Context, param types.DescribeRegionsRequest) (types.DescribeRegions, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (p *AWSCloud) DescribeInstanceBill(ctx context.Context, param types.DescribeInstanceBillRequest, isAll bool) (types.DescribeInstanceBill, error) {
+
+	// TODO implement me
+	panic("implement me")
+}
+
+func (p *AWSCloud) QueryAvailableInstances(ctx context.Context, param types.QueryAvailableInstancesRequest) (types.QueryAvailableInstances, error) {
 	// TODO implement me
 	panic("implement me")
 }

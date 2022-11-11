@@ -173,6 +173,10 @@ func (s *UtilizationDataBean) fetchRecentInstanceList(ctx context.Context) error
 	log.Printf("I! fetchRecentInstanceList len=%d", len(instanceList))
 	for _, detail := range instanceList {
 		k := fmt.Sprintf("%s:%s", s.provider.ProviderType(), detail.InstanceId)
+		if len(detail.RegionName) > 0 {
+			s.instancesMap.Store(k, detail)
+			continue
+		}
 		var regionName string
 		regionName, ok = s.regionMap[detail.RegionId]
 		if !ok {

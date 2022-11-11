@@ -166,23 +166,56 @@ func (s *UtilizationDataReader) GetDaysMemoryUtilization(ctx context.Context, da
 }
 
 func (s *UtilizationDataReader) GetInstanceList(ctx context.Context, instanceIdList ...string) ([]data.InstanceDetail, error) {
+	resp, err := s._provider.QueryAvailableInstances(ctx, types.QueryAvailableInstancesRequest{
+		InstanceIdList: instanceIdList,
+	})
+	if err != nil {
+		log.Printf("W! %s.DescribeInstanceAttribute.QueryAvailableInstances:%v", s._provider.ProviderType().String(), err)
+		return []data.InstanceDetail{}, err
+	}
+
+	availableIdMap := make(map[string]bool)
 	result := make([]data.InstanceDetail, 0, len(instanceIdList))
-	for _, i := range instanceIdList {
-		resp, err := s._provider.DescribeInstanceAttribute(ctx, types.DescribeInstanceAttributeRequest{
-			InstanceId: i,
-		})
-		if err != nil {
-			log.Printf("W! %s.DescribeInstanceAttribute:%v", s._provider.ProviderType().String(), err)
+	for _, instance := range resp.List {
+		i := data.InstanceDetail{
+			Provider:         s._provider.ProviderType(),
+			InstanceId:       instance.InstanceId,
+			RegionId:         instance.RegionId,
+			SubscriptionType: instance.SubscriptionType,
 		}
-		// 有的实例可能已经被销毁，但是为了统计仍然要放进去
+		availableIdMap[instance.InstanceId] = true
+		result = append(result, i)
+	}
+	var invalidIdList []string
+	for _, id := range instanceIdList {
+		if !availableIdMap[id] {
+			invalidIdList = append(invalidIdList, id)
+		}
+	}
+	dateTool := tools.NewBillDatePilot().SetNowT(time.Now())
+	cycle := dateTool.GetRecentMonth()
+	for _, i := range invalidIdList {
+		resp2, err2 := s._provider.DescribeInstanceBill(ctx, types.DescribeInstanceBillRequest{
+			BillingCycle: cycle,
+			Granularity:  types.Monthly,
+			InstanceId:   i,
+		}, false)
+		if err2 != nil {
+			log.Printf("W! %s.DescribeInstanceAttribute.DescribeInstanceBill:%v", s._provider.ProviderType().String(), err)
+			return []data.InstanceDetail{}, err
+		}
+		if len(resp2.Items) == 0 {
+			log.Printf("W! %s.DescribeInstanceAttribute: can not find %s instance detail", s._provider.ProviderType().String(), i)
+			continue
+		}
+		detail := resp2.Items[0]
 		result = append(result, data.InstanceDetail{
 			Provider:         s._provider.ProviderType(),
 			InstanceId:       i,
-			RegionId:         resp.RegionId,
-			SubscriptionType: resp.SubscriptionType,
+			RegionName:       detail.Region,
+			SubscriptionType: detail.SubscriptionType,
 		})
 	}
-
 	return result, nil
 }
 

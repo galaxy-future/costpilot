@@ -220,12 +220,22 @@ func (p *TencentCloud) DescribeMetricList(ctx context.Context, param types.Descr
 	panic("implement me")
 }
 
-func (p *TencentCloud) DescribeInstanceAttribute(ctx context.Context, request types.DescribeInstanceAttributeRequest) (types.DescribeInstanceAttribute, error) {
+func (p *TencentCloud) DescribeInstanceAttribute(ctx context.Context, param types.DescribeInstanceAttributeRequest) (types.DescribeInstanceAttribute, error) {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (p *TencentCloud) DescribeRegions(ctx context.Context, request types.DescribeRegionsRequest) (types.DescribeRegions, error) {
+func (p *TencentCloud) DescribeRegions(ctx context.Context, param types.DescribeRegionsRequest) (types.DescribeRegions, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (p *TencentCloud) DescribeInstanceBill(ctx context.Context, param types.DescribeInstanceBillRequest, isAll bool) (types.DescribeInstanceBill, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (p *TencentCloud) QueryAvailableInstances(ctx context.Context, param types.QueryAvailableInstancesRequest) (types.QueryAvailableInstances, error) {
 	// TODO implement me
 	panic("implement me")
 }
