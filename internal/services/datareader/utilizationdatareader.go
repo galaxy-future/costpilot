@@ -201,8 +201,8 @@ func (s *UtilizationDataReader) GetInstanceList(ctx context.Context, instanceIdL
 			InstanceId:   i,
 		}, false)
 		if err2 != nil {
-			log.Printf("W! %s.DescribeInstanceAttribute.DescribeInstanceBill:%v", s._provider.ProviderType().String(), err)
-			return []data.InstanceDetail{}, err
+			log.Printf("W! %s.DescribeInstanceAttribute.DescribeInstanceBill:%v", s._provider.ProviderType().String(), err2)
+			return []data.InstanceDetail{}, err2
 		}
 		if len(resp2.Items) == 0 {
 			log.Printf("W! %s.DescribeInstanceAttribute: can not find %s instance detail", s._provider.ProviderType().String(), i)
