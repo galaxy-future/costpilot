@@ -1,7 +1,5 @@
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/alibabacloud-go/actiontrail-20200706/v3 v3.0.0 h1:+cNdfZkvkAOvtgcIva7v8pDf9VcdZc9ELIwCgYZliwQ=
-github.com/alibabacloud-go/actiontrail-20200706/v3 v3.0.0/go.mod h1:Afv9BhLcNeh9Ucdx8ko9ReooIw+HVpegeQVg8h31b8g=
 github.com/alibabacloud-go/alibabacloud-gateway-spi v0.0.4 h1:iC9YFYKDGEy3n/FtqJnOkZsene9olVspKmkX5A2YBEo=
 github.com/alibabacloud-go/alibabacloud-gateway-spi v0.0.4/go.mod h1:sCavSAvdzOjul4cEqeVtvlSaSScfNsTQ+46HwlTL1hc=
 github.com/alibabacloud-go/bssopenapi-20171214/v3 v3.0.0 h1:Rf0oPPqcLICwNVw2Vx8apW9E8CBkWFYzALCUB0f1qI8=

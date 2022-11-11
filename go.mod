@@ -3,7 +3,6 @@ module github.com/galaxy-future/costpilot
 go 1.17
 
 require (
-	github.com/alibabacloud-go/actiontrail-20200706/v3 v3.0.0
 	github.com/alibabacloud-go/bssopenapi-20171214/v3 v3.0.0
 	github.com/alibabacloud-go/cms-20190101/v8 v8.0.0
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.0.1
