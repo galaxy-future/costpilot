@@ -30,11 +30,21 @@ func (p *HuaweiCloud) DescribeMetricList(ctx context.Context, param types.Descri
 	return types.DescribeMetricList{}, nil
 }
 
-func (p *HuaweiCloud) DescribeInstanceAttribute(ctx context.Context, request types.DescribeInstanceAttributeRequest) (types.DescribeInstanceAttribute, error) {
+func (p *HuaweiCloud) DescribeInstanceAttribute(ctx context.Context, param types.DescribeInstanceAttributeRequest) (types.DescribeInstanceAttribute, error) {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (p *HuaweiCloud) DescribeRegions(ctx context.Context, request types.DescribeRegionsRequest) (types.DescribeRegions, error) {
+func (p *HuaweiCloud) DescribeRegions(ctx context.Context, param types.DescribeRegionsRequest) (types.DescribeRegions, error) {
+	panic("implement me")
+}
+
+func (p *HuaweiCloud) DescribeInstanceBill(ctx context.Context, param types.DescribeInstanceBillRequest, isAll bool) (types.DescribeInstanceBill, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (p *HuaweiCloud) QueryAvailableInstances(ctx context.Context, param types.QueryAvailableInstancesRequest) (types.QueryAvailableInstances, error) {
+	// TODO implement me
 	panic("implement me")
 }

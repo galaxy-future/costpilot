@@ -129,9 +129,8 @@ func TestAlibabaCloud_DescribeMetricList(t *testing.T) {
 	if err != nil {
 		return
 	}
-	startTime, _ := time.Parse("2006-01-02", "2022-11-02")
-	endTime, _ := time.Parse("2006-01-02", "2022-11-03")
-	t.Log(startTime.String(), endTime.String())
+	startTime, _ := time.Parse("2006-01-02", "2022-11-10")
+	endTime, _ := time.Parse("2006-01-02", "2022-11-11")
 	got, err := p.DescribeMetricList(nil, types.DescribeMetricListRequest{
 		MetricName: types.MetricItemMemoryUsedUtilization,
 		Period:     "86400",
@@ -159,11 +158,27 @@ func TestAlibabaCloud_DescribeRegions(t *testing.T) {
 
 func TestAlibabaCloud_DescribeInstanceAttribute(t *testing.T) {
 	got, err := cli.DescribeInstanceAttribute(nil, types.DescribeInstanceAttributeRequest{
-		InstanceId: "i-wz9g67k0g3582e1z8j60",
+		InstanceId: "i-wz9ctvduhhj02x4nc5k7",
 	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	t.Log(got)
+}
+
+func TestAlibabaCloud_DescribeInstanceBill(t *testing.T) {
+	rsp, err := cli.DescribeInstanceBill(context.TODO(), types.DescribeInstanceBillRequest{
+		BillingCycle: "2022-11",
+		Granularity:  types.Monthly,
+		InstanceId:   "i-wz95ivyghpphzwqls6mq",
+	}, true)
+	t.Log(rsp, err)
+}
+
+func TestAlibabaCloud_QueryAvailableInstances(t *testing.T) {
+	_, err := cli.QueryAvailableInstances(context.TODO(), types.QueryAvailableInstancesRequest{
+		InstanceIdList: []string{"i-wz9g67k0g3582e1z8j60"},
+	})
+	t.Log(err)
 }
