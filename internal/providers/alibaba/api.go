@@ -148,7 +148,7 @@ func convQueryAccountBill(response *bssopenapi.QueryAccountBillResponse) []types
 			PipCode:          standardPipCode,
 			ProductName:      convProductName(standardPipCode, v.ProductName),
 			BillingDate:      v.BillingDate, // has date when Granularity=DAILY
-			SubscriptionType: convSubscriptionType(v.SubscriptionType),
+			SubscriptionType: convSubscriptionTypeAliyunToCloud(v.SubscriptionType),
 			Currency:         v.Currency,
 			PretaxAmount:     v.PretaxAmount,
 		}
@@ -156,16 +156,6 @@ func convQueryAccountBill(response *bssopenapi.QueryAccountBillResponse) []types
 	}
 
 	return result
-}
-
-func convSubscriptionType(subscriptionType string) cloud.SubscriptionType {
-	switch subscriptionType {
-	case "PrePaid":
-		return cloud.PrePaid
-	case "PostPaid":
-		return cloud.PostPaid
-	}
-	return "undefined"
 }
 
 func convPipCode(pipCode string) types.PipCode {
@@ -294,7 +284,7 @@ func (p *AlibabaCloud) DescribeInstanceAttribute(_ context.Context, param types.
 		Status:              *responseBody.Status,
 		InstanceType:        *responseBody.InstanceType,
 		InstanceNetworkType: *responseBody.InstanceNetworkType,
-		SubscriptionType:    convSubscriptionType(*responseBody.InstanceChargeType),
+		SubscriptionType:    convSubscriptionTypeAliyunToCloud(*responseBody.InstanceChargeType),
 		Memory:              *responseBody.Memory,
 		Cpu:                 *responseBody.Cpu,
 		ImageId:             *responseBody.ImageId,
@@ -371,7 +361,7 @@ func convInstanceBill(respData *bssopenapiV3.DescribeInstanceBillResponseBodyDat
 			IntranetIP:       *item.IntranetIP,
 			InstanceId:       *item.InstanceID,
 			Currency:         *item.Currency,
-			SubscriptionType: convSubscriptionTypeAliyunToCloud(item.SubscriptionType),
+			SubscriptionType: convSubscriptionTypeAliyunToCloud(*item.SubscriptionType),
 			InstanceSpec:     *item.InstanceSpec,
 			Region:           *item.Region,
 			ProductName:      *item.ProductName,
@@ -381,8 +371,8 @@ func convInstanceBill(respData *bssopenapiV3.DescribeInstanceBillResponseBodyDat
 	}
 	return result
 }
-func convSubscriptionTypeAliyunToCloud(subscriptionType *string) cloud.SubscriptionType {
-	switch *subscriptionType {
+func convSubscriptionTypeAliyunToCloud(subscriptionType string) cloud.SubscriptionType {
+	switch subscriptionType {
 	case "Subscription":
 		return cloud.PrePaid
 	case "PayAsYouGo":
@@ -467,7 +457,7 @@ func convAvailableInstances(respData *bssopenapiV3.QueryAvailableInstancesRespon
 			RegionId:         *item.Region,
 			Status:           *item.Status,
 			RenewStatus:      *item.RenewStatus,
-			SubscriptionType: convSubscriptionTypeAliyunToCloud(item.SubscriptionType),
+			SubscriptionType: convSubscriptionTypeAliyunToCloud(*item.SubscriptionType),
 			ProductCode:      *item.ProductCode,
 		}
 		result = append(result, i)
