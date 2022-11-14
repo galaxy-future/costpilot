@@ -160,9 +160,9 @@ func convQueryAccountBill(response *bssopenapi.QueryAccountBillResponse) []types
 
 func convSubscriptionType(subscriptionType string) cloud.SubscriptionType {
 	switch subscriptionType {
-	case "PrePaid":
+	case "PrePaid", "Subscription":
 		return cloud.PrePaid
-	case "PostPaid":
+	case "PostPaid", "PayAsYouGo":
 		return cloud.PostPaid
 	}
 	return "undefined"
