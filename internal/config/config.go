@@ -7,10 +7,8 @@ import (
 	"os"
 
 	"github.com/galaxy-future/costpilot/internal/constants/cloud"
-
-	"github.com/pkg/errors"
-
 	"github.com/galaxy-future/costpilot/internal/types"
+	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
 
