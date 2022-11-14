@@ -373,9 +373,9 @@ func convInstanceBill(respData *bssopenapiV3.DescribeInstanceBillResponseBodyDat
 }
 func convSubscriptionTypeAliyunToCloud(subscriptionType string) cloud.SubscriptionType {
 	switch subscriptionType {
-	case "Subscription", "PrePaid":
+	case "Subscription":
 		return cloud.PrePaid
-	case "PayAsYouGo", "PostPaid":
+	case "PayAsYouGo":
 		return cloud.PostPaid
 	default:
 		return cloud.Undefined
