@@ -13,8 +13,8 @@ import (
 	"testing"
 )
 
-var _AK = "WL1NEDSGD9M0H1VYX1C8"
-var _SK = "90M1drAdT7NLnPAX7MvKpDEh84VzLCQvKaXFPCtx"
+var _AK = ""
+var _SK = ""
 var _REGION = "cn-north-1"
 
 func TestHuaweiCloud_QueryAccountBill(t *testing.T) {
