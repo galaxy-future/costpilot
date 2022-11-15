@@ -12,7 +12,7 @@ window.utilizeAnalysis = {{.}}
 `
 
 type ChartTrendStyle struct {
-	Stack string
+	Stack string `json:"stack"`
 }
 
 type UtilizeAnalysisItemInSeries struct {
