@@ -58,7 +58,8 @@ CostPilot 是星汉未来基于先进的 FinOps 理念开发的一站式全场�
       ```
 
 #### 4. 效果展示
-![costanalysis](https://user-images.githubusercontent.com/87166597/195545060-a341307d-6dca-45f9-8f26-38a484073f5d.jpg)
+![bill](https://user-images.githubusercontent.com/78481036/201896066-be0c490a-d7af-4a39-a527-ce1c6dfbe0ab.png)
+![utilization](https://user-images.githubusercontent.com/78481036/201896071-e9ea6d37-63a4-4969-82d9-16a12d3ed88a.png)
 
 行为准则
 ------

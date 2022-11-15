@@ -8,6 +8,7 @@ import (
 	bss "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2"
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2/model"
 	regionHuawei "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2/region"
+
 )
 
 type HuaweiCloud struct {
@@ -27,7 +28,8 @@ func New(AK, SK, region string) (*HuaweiCloud, error) {
 	}, nil
 }
 
-func (*HuaweiCloud) ProviderType() string {
+// ProviderType
+func (*HuaweiCloud) ProviderType() cloud.Provider {
 	return cloud.HuaweiCloud
 }
 
@@ -139,4 +141,27 @@ func convPipCode(pipCode string) types.PipCode {
 		return types.CBN
 	}
 	return types.PipCode(pipCode)
+}
+
+func (p *HuaweiCloud) DescribeMetricList(ctx context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
+	return types.DescribeMetricList{}, nil
+}
+
+func (p *HuaweiCloud) DescribeInstanceAttribute(ctx context.Context, param types.DescribeInstanceAttributeRequest) (types.DescribeInstanceAttribute, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (p *HuaweiCloud) DescribeRegions(ctx context.Context, param types.DescribeRegionsRequest) (types.DescribeRegions, error) {
+	panic("implement me")
+}
+
+func (p *HuaweiCloud) DescribeInstanceBill(ctx context.Context, param types.DescribeInstanceBillRequest, isAll bool) (types.DescribeInstanceBill, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (p *HuaweiCloud) QueryAvailableInstances(ctx context.Context, param types.QueryAvailableInstancesRequest) (types.QueryAvailableInstances, error) {
+	// TODO implement me
+	panic("implement me")
 }

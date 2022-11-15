@@ -1,6 +1,6 @@
 package types
 
-import "github.com/galayx-future/costpilot/internal/constants/cloud"
+import "github.com/galaxy-future/costpilot/internal/constants/cloud"
 
 type CloudAccount struct {
 	Provider cloud.Provider `json:"provider" yaml:"provider"`

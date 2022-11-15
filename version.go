@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/galayx-future/costpilot/version"
+	"github.com/galaxy-future/costpilot/version"
 )
 
 var Version = version.Version
