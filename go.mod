@@ -15,6 +15,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.12.23
 	github.com/aws/aws-sdk-go-v2/service/costexplorer v1.21.2
 	github.com/gin-gonic/gin v1.8.1
+	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.5
 	github.com/json-iterator/go v1.1.12
 	github.com/pkg/errors v0.9.1
 	github.com/shopspring/decimal v1.3.1
