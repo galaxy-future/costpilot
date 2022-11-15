@@ -58,7 +58,8 @@ To run CostPilot in Docker, you need to install Docker first. For more informati
     docker run --mount type=bind,source=/tmp/config.yaml,target=/home/tiger/app/conf/config.yaml -p 8504:8504 --name=costpilot galaxy-future/costpilot
     ```
 #### 4. Sample Result
-![costanalysis](https://user-images.githubusercontent.com/87166597/195545060-a341307d-6dca-45f9-8f26-38a484073f5d.jpg)
+![bill](https://user-images.githubusercontent.com/78481036/201895818-d3866cae-594c-492f-8ee4-d2b5fb4617b9.png)
+![utilization](https://user-images.githubusercontent.com/78481036/201895847-c1a7879e-5008-454f-8e56-220f549237a0.png)
 
 Code of Conduct
 ------
