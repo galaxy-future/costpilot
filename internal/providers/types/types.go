@@ -53,6 +53,12 @@ type AccountBillItem struct {
 	PretaxAmount     float64                `json:"PretaxAmount" xml:"PretaxAmount"` // 应付金额
 }
 
+type ServiceType struct {
+	ServiceTypeName string `json:"service_type_name"`
+	ServiceTypeCode string `json:"service_type_code"`
+	Abbreviation    string `json:"abbreviation"`
+}
+
 type DescribeMetricListRequest struct {
 	MetricName         MetricItem
 	Period             string
