@@ -257,3 +257,13 @@ func (p *TencentCloud) QueryAvailableInstances(ctx context.Context, param types.
 	// TODO implement me
 	panic("implement me")
 }
+
+func (p *TencentCloud) DescribeZones(ctx context.Context, request types.DescribeZonesRequest) (types.DescribeZones, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (p *TencentCloud) DescribeInstances(ctx context.Context, request types.DescribeInstancesRequest) (types.DescribeInstances, error) {
+	// TODO implement me
+	panic("implement me")
+}
