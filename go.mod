@@ -14,6 +14,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.17.10
 	github.com/aws/aws-sdk-go-v2/credentials v1.12.23
 	github.com/aws/aws-sdk-go-v2/service/costexplorer v1.21.2
+	github.com/baidubce/bce-sdk-go v0.9.138
 	github.com/gin-gonic/gin v1.8.1
 	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.5
 	github.com/json-iterator/go v1.1.12
@@ -22,7 +23,9 @@ require (
 	github.com/spf13/cast v1.5.0
 	github.com/stretchr/testify v1.8.0
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/billing v1.0.514
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.514
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.542
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.542
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/monitor v1.0.542
 	go.uber.org/ratelimit v0.2.0
 	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
 	gopkg.in/yaml.v2 v2.4.0

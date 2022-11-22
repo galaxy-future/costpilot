@@ -2,6 +2,8 @@ package huawei
 
 import (
 	"context"
+	"strconv"
+
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/galaxy-future/costpilot/internal/constants/cloud"
 	"github.com/galaxy-future/costpilot/internal/providers/types"
@@ -10,7 +12,6 @@ import (
 	bss "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2"
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2/model"
 	regionHuawei "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2/region"
-	"strconv"
 )
 
 type HuaweiCloud struct {
@@ -90,10 +91,10 @@ func convQueryAccountBill(response *model.ListCustomerselfResourceRecordsRespons
 
 func convSubscriptionType(chargeMode string) cloud.SubscriptionType {
 	switch chargeMode {
-	//1:包年/包月
+	// 1:包年/包月
 	case "1":
 		return cloud.PrePaid
-	//3：按需
+	// 3：按需
 	case "3":
 		return cloud.PostPaid
 	}
@@ -102,28 +103,28 @@ func convSubscriptionType(chargeMode string) cloud.SubscriptionType {
 
 func convPipCode(pipCode string) types.PipCode {
 	switch pipCode {
-	//弹性云服务器
+	// 弹性云服务器
 	case "hws.service.type.ec2":
 		return types.ECS
-	//弹性公网IP
+	// 弹性公网IP
 	case "hws.service.type.eip":
 		return types.EIP
-	//对象存储服务
+	// 对象存储服务
 	case "hws.service.type.obs":
 		return types.S3
-		//NAT网关
+		// NAT网关
 	case "hws.service.type.natgateway":
 		return types.NAT
-		//弹性文件服务
+		// 弹性文件服务
 	case "hws.service.type.sfs":
 		return types.NAS
-		//弹性负载均衡
+		// 弹性负载均衡
 	case "hws.service.type.elb":
 		return types.SLB
-		//分布式缓存服务
+		// 分布式缓存服务
 	case "hws.service.type.dcs":
 		return types.KVSTORE
-		//云桌面
+		// 云桌面
 	case "hws.service.type.vdi":
 		return types.GWS
 		// 企业网络部署规划设计服务
@@ -135,11 +136,6 @@ func convPipCode(pipCode string) types.PipCode {
 
 func (p *HuaweiCloud) DescribeMetricList(ctx context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
 	return types.DescribeMetricList{}, nil
-}
-
-func (p *HuaweiCloud) DescribeInstanceAttribute(ctx context.Context, param types.DescribeInstanceAttributeRequest) (types.DescribeInstanceAttribute, error) {
-	// TODO implement me
-	return types.DescribeInstanceAttribute{}, nil
 }
 
 func (p *HuaweiCloud) DescribeRegions(ctx context.Context, param types.DescribeRegionsRequest) (types.DescribeRegions, error) {
@@ -300,4 +296,14 @@ func (p *HuaweiCloud) queryAccountBillByDate(ctx context.Context, param types.Qu
 	}
 
 	return result, nil
+}
+
+func (p *HuaweiCloud) DescribeInstances(ctx context.Context, param types.DescribeInstancesRequest) (types.DescribeInstances, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (p *HuaweiCloud) DescribeZones(ctx context.Context, param types.DescribeZonesRequest) (types.DescribeZones, error) {
+	// TODO implement me
+	panic("implement me")
 }

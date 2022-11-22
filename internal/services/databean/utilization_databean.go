@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/galaxy-future/costpilot/internal/constants/cloud"
 	"github.com/galaxy-future/costpilot/internal/data"
 	"github.com/galaxy-future/costpilot/internal/providers"
 	"github.com/galaxy-future/costpilot/internal/services/datareader"
@@ -17,11 +19,14 @@ import (
 )
 
 type UtilizationDataBean struct {
-	provider   providers.Provider
-	dataReader *datareader.UtilizationDataReader
+	cloudAccount types.CloudAccount
+	provider     providers.Provider
+	dataReader   *datareader.UtilizationDataReader
 
-	dateRange tools.BillingDate
-	regionMap map[string]string
+	dateRange     tools.BillingDate
+	regionMap     map[string]string                // k->v: regionId->regionName
+	regionZoneMap map[string][]string              // k->v: regionId->[]zoneId
+	instanceMap   map[string][]data.InstanceDetail // k->v: regionId->[]data.InstanceDetail
 
 	dailyCpu    sync.Map // 2022-01-02 -> data.DailyCpuUtilization
 	dailyMemory sync.Map // 2022-01-02 -> data.DailyCpuUtilization
@@ -35,8 +40,9 @@ type UtilizationDataBean struct {
 
 func NewUtilization(a types.CloudAccount, t time.Time) *UtilizationDataBean {
 	s := &UtilizationDataBean{
-		dateRange: tools.BillingDate{},
-		bp:        tools.NewBillDatePilot().SetNowT(t),
+		cloudAccount: a,
+		dateRange:    tools.BillingDate{},
+		bp:           tools.NewBillDatePilot().SetNowT(t),
 	}
 	s.initProvider(a)
 	s.initDataReader()
@@ -53,6 +59,16 @@ func (s *UtilizationDataBean) initProvider(a types.CloudAccount) *UtilizationDat
 	return s
 }
 
+// newRegionProvider create provider by new region
+func (s *UtilizationDataBean) newRegionProvider(regionId string) providers.Provider {
+	var err error
+	p, err := providers.GetProvider(s.cloudAccount.Provider, s.cloudAccount.AK, s.cloudAccount.SK, regionId)
+	if err != nil {
+		log.Printf("E! newRegionProvider failed: %v\n", err)
+	}
+	return p
+}
+
 func (s *UtilizationDataBean) initDataReader() {
 	s.dataReader = datareader.NewUtilization(s.provider)
 }
@@ -65,6 +81,52 @@ func (s *UtilizationDataBean) loadRegionMap(ctx context.Context) error {
 	}
 	s.regionMap = regionMap
 	log.Printf("I! loadRegionMap success,len=%d", len(regionMap))
+	return nil
+}
+
+func (s *UtilizationDataBean) loadAllZones(ctx context.Context) error {
+	var err error
+	regionMap := make(map[string]string)
+	regionZonesMap := make(map[string][]string)
+	regionMap, err = s.dataReader.GetAllRegionMap(ctx)
+	if err != nil {
+		log.Printf("E! loadAllZones.GetAllRegionMap:%v", err)
+		return err
+	}
+	if len(regionMap) == 0 {
+		return nil
+	}
+	for region, _ := range regionMap {
+		if !strings.Contains(region, "beijing") && !strings.Contains(region, "shanghai") && !strings.Contains(region, "guangzhou") {
+			continue
+		}
+		p := s.newRegionProvider(region)
+		zoneMap, err := s.dataReader.GetAllZoneMap(ctx, p, region, true)
+		if err != nil {
+			log.Printf("E! loadAllZones.GetAllZoneMap:%v", err)
+			return err
+		}
+		for id, _ := range zoneMap {
+			regionZonesMap[region] = append(regionZonesMap[region], id)
+		}
+	}
+
+	s.regionZoneMap = regionZonesMap
+	log.Printf("I! loadAllZones success,len=%d", len(regionZonesMap))
+	return nil
+}
+
+func (s *UtilizationDataBean) getAllInstances(ctx context.Context) error {
+	for regionId, zoneIdList := range s.regionZoneMap {
+		p := s.newRegionProvider(regionId)
+		instanceList, err := s.dataReader.GetInstanceByZones(ctx, p, zoneIdList)
+		if err != nil {
+			log.Printf("E! getAllInstances.GetInstanceByZones:%v", err)
+			return err
+		}
+		s.instanceMap[regionId] = append(s.instanceMap[regionId], instanceList...)
+	}
+	log.Printf("I! getAllInstances success,len=%d", len(s.instanceMap))
 	return nil
 }
 
@@ -114,12 +176,52 @@ func (s *UtilizationDataBean) fetchCpuUtilization(ctx context.Context) error {
 	})
 	log.Printf("I! fetchCpuUtilization days: %v", days)
 
-	cpuData, err := dataReader.GetDaysCpuUtilization(ctx, days...)
+	cpuData, err := dataReader.GetDaysCpuUtilization(ctx, nil, []string{}, days...)
 	if err != nil {
 		return err
 	}
 	for _, v := range cpuData {
 		s.dailyCpu.LoadOrStore(v.Day, v)
+	}
+
+	return nil
+}
+
+func (s *UtilizationDataBean) fetchCpuUtilizationByInstanceIds(ctx context.Context) error {
+	b := s.dateRange
+	dataReader := datareader.NewUtilization(s.provider)
+	var days []string
+
+	for _, v := range b.Days {
+		if _, ok := s.dailyCpu.Load(v); !ok {
+			days = append(days, v)
+		}
+	}
+
+	sort.Slice(days, func(i, j int) bool {
+		return days[i] < days[j]
+	})
+	log.Printf("I! fetchCpuUtilizationByInstanceIds days: %v", days)
+
+	for regionId, instanceList := range s.instanceMap {
+		var ids = make([]string, len(instanceList))
+		for _, i := range instanceList {
+			ids = append(ids, i.InstanceId)
+		}
+		p := s.newRegionProvider(regionId)
+		cpuData, err := dataReader.GetDaysCpuUtilization(ctx, p, ids, days...)
+		if err != nil {
+			return err
+		}
+		for _, v := range cpuData {
+			d, ok := s.dailyCpu.Load(v.Day)
+			if ok {
+				cpuDay := d.(data.DailyCpuUtilization)
+				cpuDay.Utilization = append(cpuDay.Utilization, v.Utilization...)
+			} else {
+				s.dailyCpu.LoadOrStore(v.Day, v)
+			}
+		}
 	}
 
 	return nil
@@ -139,7 +241,7 @@ func (s *UtilizationDataBean) fetchMemoryUtilization(ctx context.Context) error 
 		return days[i] < days[j]
 	})
 	log.Printf("I! fetchMemoryUtilization days: %v", days)
-	memoryData, err := s.dataReader.GetDaysMemoryUtilization(ctx, days...)
+	memoryData, err := s.dataReader.GetDaysMemoryUtilization(ctx, nil, []string{}, days...)
 	if err != nil {
 		return err
 	}
@@ -147,6 +249,46 @@ func (s *UtilizationDataBean) fetchMemoryUtilization(ctx context.Context) error 
 	for _, v := range memoryData {
 		s.dailyMemory.LoadOrStore(v.Day, v)
 	}
+	return nil
+}
+
+func (s *UtilizationDataBean) fetchMemoryUtilizationByInstanceIds(ctx context.Context) error {
+	b := s.dateRange
+	var days []string
+
+	for _, v := range b.Days {
+		if _, ok := s.dailyMemory.Load(v); !ok {
+			days = append(days, v)
+		}
+	}
+
+	sort.Slice(days, func(i, j int) bool {
+		return days[i] < days[j]
+	})
+	log.Printf("I! fetchMemoryUtilizationByInstanceIds days: %v", days)
+
+	for regionId, instanceList := range s.instanceMap {
+		var ids = make([]string, len(instanceList))
+		for _, i := range instanceList {
+			ids = append(ids, i.InstanceId)
+		}
+		p := s.newRegionProvider(regionId)
+		memoryData, err := s.dataReader.GetDaysMemoryUtilization(ctx, p, ids, days...)
+		if err != nil {
+			return err
+		}
+		for _, v := range memoryData {
+			d, ok := s.dailyCpu.Load(v.Day)
+			if ok {
+				memoryDay := d.(data.DailyMemoryUtilization)
+				memoryDay.Utilization = append(memoryDay.Utilization, v.Utilization...)
+				s.dailyMemory.LoadOrStore(v.Day, memoryDay)
+			} else {
+				s.dailyMemory.LoadOrStore(v.Day, v)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -188,19 +330,37 @@ func (s *UtilizationDataBean) fetchRecentInstanceList(ctx context.Context) error
 	return nil
 }
 
-func (s *UtilizationDataBean) GetUtilizationAnalysisPipeLine() []func(context.Context) error {
-	return []func(context.Context) error{
-		s.loadRegionMap,
+func (s *UtilizationDataBean) getRecentInstanceListFromLocal(ctx context.Context) error {
+	return nil
+}
 
+func (s *UtilizationDataBean) GetUtilizationAnalysisPipeLine() []func(context.Context) error {
+	var pipeLine []func(context.Context) error
+
+	// 有的厂商要先去拉取所有实例，然后才能去抓监控数据
+	if s.provider.ProviderType() != cloud.AlibabaCloud {
+		pipeLine = append(pipeLine, s.loadAllZones, s.getAllInstances)
+	}
+
+	// 通用处理
+	pipeLine = append(pipeLine,
+		s.loadRegionMap,
 		s.getRecentDay,
 		s.getPreviousDay,
 		s.getRecent14DaysDate,
+	)
 
-		s.fetchCpuUtilization,
-		s.fetchMemoryUtilization,
-
-		s.fetchRecentInstanceList,
+	if s.provider.ProviderType() == cloud.AlibabaCloud {
+		pipeLine = append(pipeLine, s.fetchCpuUtilization, s.fetchMemoryUtilization, s.fetchRecentInstanceList)
+	} else {
+		pipeLine = append(pipeLine,
+			s.fetchCpuUtilizationByInstanceIds,
+			s.fetchMemoryUtilizationByInstanceIds,
+			s.getRecentInstanceListFromLocal,
+		)
 	}
+
+	return pipeLine
 }
 
 func (s *UtilizationDataBean) RunPipeline(ctx context.Context) error {

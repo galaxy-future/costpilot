@@ -30,8 +30,10 @@ type Provider interface {
 
 	// DescribeRegions list all regions as the RegionId and RegionName map.
 	DescribeRegions(context.Context, types.DescribeRegionsRequest) (types.DescribeRegions, error)
-	// DescribeInstanceAttribute get the Instance detail by only InstantId.
-	DescribeInstanceAttribute(context.Context, types.DescribeInstanceAttributeRequest) (types.DescribeInstanceAttribute, error)
+	// DescribeZones list all available zone of a region
+	DescribeZones(context.Context, types.DescribeZonesRequest) (types.DescribeZones, error)
+	// DescribeInstances Describes the specified instances or all instances.
+	DescribeInstances(context.Context, types.DescribeInstancesRequest) (types.DescribeInstances, error)
 
 	// DescribeMetricList get monitoring samples, eg: cpu/memory.
 	DescribeMetricList(context.Context, types.DescribeMetricListRequest) (types.DescribeMetricList, error)

@@ -15,10 +15,14 @@ import (
 	billing "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/billing/v20180709"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
+	cvm "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm/v20170312"
+	monitor "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/monitor/v20180724"
 )
 
 type TencentCloud struct {
 	billingClient *billing.Client
+	cvmClient     *cvm.Client
+	monitorClient *monitor.Client
 }
 
 func New(ak, sk, regionId string) (*TencentCloud, error) {
@@ -29,7 +33,26 @@ func New(ak, sk, regionId string) (*TencentCloud, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &TencentCloud{billingClient: billingClient}, nil
+
+	cvmCP := profile.NewClientProfile()
+	cvmCP.HttpProfile.Endpoint = _cvmEndPoint
+	cvmClient, err := cvm.NewClient(credential, regionId, cvmCP)
+	if err != nil {
+		return nil, err
+	}
+
+	monitorCP := profile.NewClientProfile()
+	monitorCP.HttpProfile.Endpoint = _monitorEndPoint
+	monitorClient, err := monitor.NewClient(credential, regionId, monitorCP)
+	if err != nil {
+		return nil, err
+	}
+
+	return &TencentCloud{
+		billingClient: billingClient,
+		cvmClient:     cvmClient,
+		monitorClient: monitorClient,
+	}, nil
 }
 
 // ProviderType
@@ -216,11 +239,6 @@ func convCurrency(priceUnit string) (currency string) {
 }
 
 func (p *TencentCloud) DescribeMetricList(ctx context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
-	// TODO implement me
-	panic("implement me")
-}
-
-func (p *TencentCloud) DescribeInstanceAttribute(ctx context.Context, param types.DescribeInstanceAttributeRequest) (types.DescribeInstanceAttribute, error) {
 	// TODO implement me
 	panic("implement me")
 }

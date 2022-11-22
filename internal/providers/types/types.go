@@ -59,10 +59,15 @@ type ServiceType struct {
 	Abbreviation    string `json:"abbreviation"`
 }
 
+type MetricListInstanceFilter struct {
+	InstanceIds []string
+}
+
 type DescribeMetricListRequest struct {
 	MetricName         MetricItem
 	Period             string
 	StartTime, EndTime time.Time
+	Filter             MetricListInstanceFilter
 }
 
 type MetricSample struct {
@@ -93,36 +98,49 @@ type DescribeRegionsRequest struct {
 	Language     RegionLanguage
 }
 
-type Region struct {
-	RegionEndpoint string
-	LocalName      string
-	RegionId       string
+type ItemRegion struct {
+	LocalName string
+	RegionId  string
 }
 
 type DescribeRegions struct {
-	List []Region
+	List []ItemRegion
 }
 
-type DescribeInstanceAttributeRequest struct {
-	InstanceId string
+type DescribeZonesRequest struct {
+	RegionId  string
+	Available bool
 }
 
-type DescribeInstanceAttribute struct {
-	InstanceId          string
-	InstanceName        string
-	RegionId            string
-	HostName            string
-	Status              string
-	InstanceType        string
-	InstanceNetworkType string
-	SubscriptionType    cloud.SubscriptionType
-	Memory              int32
-	Cpu                 int32
-	ImageId             string
-	StoppedMode         string
-	InternetChargeType  string
-	PublicIpAddress     []string
-	InnerIpAddress      []string
+type ItemZone struct {
+	ZoneId   string
+	ZoneName string
+}
+
+type DescribeZones struct {
+	List []ItemZone
+}
+
+type DescribeInstancesRequest struct {
+	// optional
+	ZoneIdList []string
+	// optional
+	InstanceIds []string
+}
+type ItemDescribeInstance struct {
+	InstanceId         string
+	InstanceName       string
+	RegionId           string
+	RegionName         string
+	HostName           string
+	SubscriptionType   cloud.SubscriptionType
+	InternetChargeType string
+	PublicIpAddress    []string
+	InnerIpAddress     []string
+}
+type DescribeInstances struct {
+	TotalCount int
+	List       []ItemDescribeInstance
 }
 
 type DescribeInstanceBillRequest struct {
