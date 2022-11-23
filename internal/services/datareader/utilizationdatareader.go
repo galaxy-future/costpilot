@@ -23,7 +23,7 @@ func NewUtilization(p providers.Provider) *UtilizationDataReader {
 }
 
 // GetDailyCpuUtilization
-func (s *UtilizationDataReader) GetDailyCpuUtilization(ctx context.Context, day string) (data.DailyCpuUtilization, error) {
+func (s *UtilizationDataReader) GetDailyCpuUtilization(ctx context.Context, day string, p providers.Provider, instanceIds []string) (data.DailyCpuUtilization, error) {
 	if !tools.IsValidDayDate(day) {
 		log.Printf("W! invalid day[%v]\n", day)
 		return data.DailyCpuUtilization{}, nil
@@ -35,18 +35,23 @@ func (s *UtilizationDataReader) GetDailyCpuUtilization(ctx context.Context, day 
 	}
 	endTime := startTime.AddDate(0, 0, +1)
 
-	resp, err := s._provider.DescribeMetricList(ctx, types.DescribeMetricListRequest{
+	provider := s._provider
+	if p != nil {
+		provider = p
+	}
+	resp, err := provider.DescribeMetricList(ctx, types.DescribeMetricListRequest{
 		MetricName: types.MetricItemCPUUtilization,
 		Period:     "86400", // 一天
 		StartTime:  startTime,
 		EndTime:    endTime,
+		Filter:     types.MetricListInstanceFilter{InstanceIds: instanceIds},
 	})
 	if err != nil {
 		return data.DailyCpuUtilization{}, err
 	}
 
 	result := data.DailyCpuUtilization{
-		Provider: s._provider.ProviderType(),
+		Provider: provider.ProviderType(),
 		Day:      day,
 	}
 
@@ -59,7 +64,7 @@ func (s *UtilizationDataReader) GetDailyCpuUtilization(ctx context.Context, day 
 	return result, nil
 }
 
-func (s *UtilizationDataReader) GetDaysCpuUtilization(ctx context.Context, days ...string) ([]data.DailyCpuUtilization, error) {
+func (s *UtilizationDataReader) GetDaysCpuUtilization(ctx context.Context, p providers.Provider, instanceIds []string, days ...string) ([]data.DailyCpuUtilization, error) {
 	var result []data.DailyCpuUtilization
 	if len(days) == 0 {
 		return result, nil
@@ -74,7 +79,7 @@ func (s *UtilizationDataReader) GetDaysCpuUtilization(ctx context.Context, days 
 				log.Printf("I! Canceled GetDays[%s]\n", d)
 				return nil
 			default:
-				res, err := s.GetDailyCpuUtilization(ctx, d)
+				res, err := s.GetDailyCpuUtilization(ctx, d, p, instanceIds)
 				if err != nil {
 					return err
 				}
@@ -94,7 +99,7 @@ func (s *UtilizationDataReader) GetDaysCpuUtilization(ctx context.Context, days 
 	return result, nil
 }
 
-func (s *UtilizationDataReader) GetDailyMemoryUtilization(ctx context.Context, day string) (data.DailyMemoryUtilization, error) {
+func (s *UtilizationDataReader) GetDailyMemoryUtilization(ctx context.Context, p providers.Provider, instanceIds []string, day string) (data.DailyMemoryUtilization, error) {
 	if !tools.IsValidDayDate(day) {
 		log.Printf("W! invalid day[%v]\n", day)
 		return data.DailyMemoryUtilization{}, nil
@@ -106,18 +111,25 @@ func (s *UtilizationDataReader) GetDailyMemoryUtilization(ctx context.Context, d
 	}
 	endTime := startTime.AddDate(0, 0, +1)
 
-	resp, err := s._provider.DescribeMetricList(ctx, types.DescribeMetricListRequest{
+	provider := s._provider
+	if p != nil {
+		provider = p
+	}
+	resp, err := provider.DescribeMetricList(ctx, types.DescribeMetricListRequest{
 		MetricName: types.MetricItemMemoryUsedUtilization,
 		Period:     "86400", // 一天
 		StartTime:  startTime,
 		EndTime:    endTime,
+		Filter: types.MetricListInstanceFilter{
+			InstanceIds: instanceIds,
+		},
 	})
 	if err != nil {
 		return data.DailyMemoryUtilization{}, err
 	}
 
 	result := data.DailyMemoryUtilization{
-		Provider: s._provider.ProviderType(),
+		Provider: provider.ProviderType(),
 		Day:      day,
 	}
 
@@ -130,7 +142,7 @@ func (s *UtilizationDataReader) GetDailyMemoryUtilization(ctx context.Context, d
 	return result, nil
 }
 
-func (s *UtilizationDataReader) GetDaysMemoryUtilization(ctx context.Context, days ...string) ([]data.DailyMemoryUtilization, error) {
+func (s *UtilizationDataReader) GetDaysMemoryUtilization(ctx context.Context, p providers.Provider, instanceIds []string, days ...string) ([]data.DailyMemoryUtilization, error) {
 	var result []data.DailyMemoryUtilization
 	if len(days) == 0 {
 		return result, nil
@@ -145,7 +157,7 @@ func (s *UtilizationDataReader) GetDaysMemoryUtilization(ctx context.Context, da
 				log.Printf("I! Canceled GetDays[%s]\n", d)
 				return nil
 			default:
-				res, err := s.GetDailyMemoryUtilization(ctx, d)
+				res, err := s.GetDailyMemoryUtilization(ctx, p, instanceIds, d)
 				if err != nil {
 					return err
 				}
@@ -170,7 +182,7 @@ func (s *UtilizationDataReader) GetInstanceList(ctx context.Context, instanceIdL
 		InstanceIdList: instanceIdList,
 	})
 	if err != nil {
-		log.Printf("W! %s.DescribeInstanceAttribute.QueryAvailableInstances:%v", s._provider.ProviderType().String(), err)
+		log.Printf("W! %s.GetInstanceList.QueryAvailableInstances:%v", s._provider.ProviderType().String(), err)
 		return []data.InstanceDetail{}, err
 	}
 
@@ -201,11 +213,11 @@ func (s *UtilizationDataReader) GetInstanceList(ctx context.Context, instanceIdL
 			InstanceId:   i,
 		}, false)
 		if err2 != nil {
-			log.Printf("W! %s.DescribeInstanceAttribute.DescribeInstanceBill:%v", s._provider.ProviderType().String(), err2)
+			log.Printf("W! %s.GetInstanceList.DescribeInstanceBill:%v", s._provider.ProviderType().String(), err2)
 			return []data.InstanceDetail{}, err2
 		}
 		if len(resp2.Items) == 0 {
-			log.Printf("W! %s.DescribeInstanceAttribute: can not find %s instance detail", s._provider.ProviderType().String(), i)
+			log.Printf("W! %s.GetInstanceList: can not find %s instance detail", s._provider.ProviderType().String(), i)
 			continue
 		}
 		detail := resp2.Items[0]
@@ -232,5 +244,24 @@ func (s *UtilizationDataReader) GetAllRegionMap(ctx context.Context) (map[string
 	for _, region := range resp.List {
 		result[region.RegionId] = region.LocalName
 	}
+	return result, nil
+}
+
+func (s *UtilizationDataReader) GetInstanceByRegionProvider(ctx context.Context, p providers.Provider, regionId string) ([]data.InstanceDetail, error) {
+	var result []data.InstanceDetail
+
+	resp, err := p.DescribeInstances(ctx, types.DescribeInstancesRequest{})
+	if err != nil {
+		return result, err
+	}
+	for _, i := range resp.List {
+		result = append(result, data.InstanceDetail{
+			Provider:         p.ProviderType(),
+			InstanceId:       i.InstanceId,
+			RegionId:         regionId,
+			SubscriptionType: i.SubscriptionType,
+		})
+	}
+
 	return result, nil
 }

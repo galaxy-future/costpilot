@@ -156,17 +156,6 @@ func TestAlibabaCloud_DescribeRegions(t *testing.T) {
 	t.Log(got)
 }
 
-func TestAlibabaCloud_DescribeInstanceAttribute(t *testing.T) {
-	got, err := cli.DescribeInstanceAttribute(nil, types.DescribeInstanceAttributeRequest{
-		InstanceId: "i-wz9ctvduhhj02x4nc5k7",
-	})
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	t.Log(got)
-}
-
 func TestAlibabaCloud_DescribeInstanceBill(t *testing.T) {
 	rsp, err := cli.DescribeInstanceBill(context.TODO(), types.DescribeInstanceBillRequest{
 		BillingCycle: "2022-11",
