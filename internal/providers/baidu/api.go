@@ -2,6 +2,7 @@ package baidu
 
 import (
 	"context"
+	"net/http"
 	"strings"
 
 	"github.com/baidubce/bce-sdk-go/services/bcc"
@@ -11,7 +12,8 @@ import (
 )
 
 type BaiduCloud struct {
-	bccClient *bcc.Client
+	bccClient  *bcc.Client
+	httpClient *http.Client
 }
 
 var EndPoints = map[string]string{
@@ -35,7 +37,8 @@ func New(ak, sk, regionId string) (*BaiduCloud, error) {
 	}
 
 	return &BaiduCloud{
-		bccClient: bccClient,
+		bccClient:  bccClient,
+		httpClient: &http.Client{},
 	}, nil
 }
 
@@ -51,6 +54,7 @@ func (p *BaiduCloud) QueryAccountBill(ctx context.Context, param types.QueryAcco
 
 func (p *BaiduCloud) DescribeMetricList(ctx context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
 	// TODO implement me
+	// 百度云没有提供官方 sdk，但我们可以自己组装参数，用 go http 发起请求，实现参见：https://github.com/galaxy-future/bridgx/blob/dev/pkg/cloud/baidu/cr.go#L37
 	return types.DescribeMetricList{}, nil
 }
 
@@ -64,7 +68,6 @@ func (p *BaiduCloud) DescribeInstanceBill(ctx context.Context, param types.Descr
 }
 
 func (p *BaiduCloud) QueryAvailableInstances(ctx context.Context, param types.QueryAvailableInstancesRequest) (types.QueryAvailableInstances, error) {
-	// TODO implement me
 	return types.QueryAvailableInstances{}, nil
 }
 
