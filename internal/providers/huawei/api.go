@@ -10,12 +10,22 @@ import (
 	"github.com/galaxy-future/costpilot/tools/limiter"
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/core/auth/global"
 	bss "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2"
-	"github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2/model"
+	bssModel "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2/model"
 	regionHuawei "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2/region"
+	ces "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ces/v1"
+	ecs "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ecs/v2"
+	ecsRegion "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ecs/v2/region"
+	iam "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/iam/v3"
+	iamRegion "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/iam/v3/region"
+	// cesModel "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ces/v1/model"
+	cesRegion "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ces/v1/region"
 )
 
 type HuaweiCloud struct {
 	bssClientOpt *bss.BssClient
+	iamClient    *iam.IamClient
+	ecsClient    *ecs.EcsClient
+	cesClient    *ces.CesClient
 }
 
 func New(AK, SK, region string) (*HuaweiCloud, error) {
@@ -26,8 +36,29 @@ func New(AK, SK, region string) (*HuaweiCloud, error) {
 
 	bssClientOpt := bss.NewBssClient(bss.BssClientBuilder().WithRegion(regionHuawei.ValueOf(region)).WithCredential(auth).Build())
 
+	iamClient := iam.NewIamClient(
+		iam.IamClientBuilder().
+			WithRegion(iamRegion.ValueOf(region)).
+			WithCredential(auth).
+			Build())
+
+	ecsClient := ecs.NewEcsClient(
+		ecs.EcsClientBuilder().
+			WithRegion(ecsRegion.ValueOf(region)).
+			WithCredential(auth).
+			Build())
+
+	cesClient := ces.NewCesClient(
+		ces.CesClientBuilder().
+			WithRegion(cesRegion.ValueOf(region)).
+			WithCredential(auth).
+			Build())
+
 	return &HuaweiCloud{
 		bssClientOpt: bssClientOpt,
+		iamClient:    iamClient,
+		ecsClient:    ecsClient,
+		cesClient:    cesClient,
 	}, nil
 }
 
@@ -49,7 +80,7 @@ func (p *HuaweiCloud) QueryAccountBill(ctx context.Context, param types.QueryAcc
 
 	return result, nil
 }
-func convQueryAccountBillByMonth(param types.QueryAccountBillRequest, response *model.ShowCustomerMonthlySumResponse) []types.AccountBillItem {
+func convQueryAccountBillByMonth(param types.QueryAccountBillRequest, response *bssModel.ShowCustomerMonthlySumResponse) []types.AccountBillItem {
 	if response == nil || response.BillSums == nil {
 		return []types.AccountBillItem{}
 	}
@@ -66,7 +97,7 @@ func convQueryAccountBillByMonth(param types.QueryAccountBillRequest, response *
 	}
 	return result
 }
-func convQueryAccountBill(response *model.ListCustomerselfResourceRecordsResponse) []types.AccountBillItem {
+func convQueryAccountBill(response *bssModel.ListCustomerselfResourceRecordsResponse) []types.AccountBillItem {
 	if response == nil {
 		return []types.AccountBillItem{}
 	}
@@ -153,12 +184,12 @@ func (p *HuaweiCloud) QueryAvailableInstances(ctx context.Context, param types.Q
 func (p *HuaweiCloud) queryAccountBillByMonth(ctx context.Context, param types.QueryAccountBillRequest) (result types.DataInQueryAccountBill, err error) {
 
 	billItems := make([]types.AccountBillItem, 0)
-	request := &model.ShowCustomerMonthlySumRequest{}
+	request := &bssModel.ShowCustomerMonthlySumRequest{}
 	request.BillCycle = param.BillingCycle
 	pageNum := int32(0)
 	request.Offset = tea.Int32(0)
 	request.Limit = tea.Int32(10)
-	response := new(model.ShowCustomerMonthlySumResponse)
+	response := new(bssModel.ShowCustomerMonthlySumResponse)
 	if param.IsGroupByProduct {
 		for {
 			limiter := limiter.Limiters.GetLimiter(p.ProviderType().String()+"-"+"ShowCustomerMonthlySum", 9)
@@ -209,7 +240,7 @@ func (p *HuaweiCloud) queryAccountBillByMonth(ctx context.Context, param types.Q
 }
 func (p *HuaweiCloud) queryAccountBillByDate(ctx context.Context, param types.QueryAccountBillRequest) (result types.DataInQueryAccountBill, err error) {
 	billItems := make([]types.AccountBillItem, 0)
-	request := &model.ListCustomerselfResourceRecordsRequest{}
+	request := &bssModel.ListCustomerselfResourceRecordsRequest{}
 	request.Cycle = param.BillingCycle
 	request.BillDateBegin = tea.String(param.BillingDate)
 	request.BillDateEnd = tea.String(param.BillingDate)
@@ -218,7 +249,7 @@ func (p *HuaweiCloud) queryAccountBillByDate(ctx context.Context, param types.Qu
 	request.Offset = tea.Int32(0)
 	request.Limit = tea.Int32(10)
 	pageNum := int32(0)
-	response := new(model.ListCustomerselfResourceRecordsResponse)
+	response := new(bssModel.ListCustomerselfResourceRecordsResponse)
 	for {
 		limiter := limiter.Limiters.GetLimiter(p.ProviderType().String()+"-"+"ListCustomerselfResourceRecords", 9)
 		limiter.Take()

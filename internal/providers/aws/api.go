@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/alibabacloud-go/tea/tea"
+	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/galaxy-future/costpilot/tools"
 
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -19,7 +21,9 @@ import (
 )
 
 type AWSCloud struct {
-	client *costexplorer.Client
+	client     *costexplorer.Client
+	ec2Client  *ec2.Client
+	cloudWatch *cloudwatch.Client
 }
 
 func New(AK, SK, regionId string) (*AWSCloud, error) {
@@ -28,7 +32,12 @@ func New(AK, SK, regionId string) (*AWSCloud, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &AWSCloud{client: costexplorer.NewFromConfig(cfg)}, nil
+
+	return &AWSCloud{
+		client:     costexplorer.NewFromConfig(cfg),
+		ec2Client:  ec2.NewFromConfig(cfg),
+		cloudWatch: cloudwatch.NewFromConfig(cfg),
+	}, nil
 }
 
 // ProviderType
