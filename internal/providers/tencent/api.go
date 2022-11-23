@@ -15,10 +15,14 @@ import (
 	billing "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/billing/v20180709"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
+	cvm "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm/v20170312"
+	monitor "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/monitor/v20180724"
 )
 
 type TencentCloud struct {
 	billingClient *billing.Client
+	cvmClient     *cvm.Client
+	monitorClient *monitor.Client
 }
 
 func New(ak, sk, regionId string) (*TencentCloud, error) {
@@ -29,7 +33,26 @@ func New(ak, sk, regionId string) (*TencentCloud, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &TencentCloud{billingClient: billingClient}, nil
+
+	cvmCP := profile.NewClientProfile()
+	cvmCP.HttpProfile.Endpoint = _cvmEndPoint
+	cvmClient, err := cvm.NewClient(credential, regionId, cvmCP)
+	if err != nil {
+		return nil, err
+	}
+
+	monitorCP := profile.NewClientProfile()
+	monitorCP.HttpProfile.Endpoint = _monitorEndPoint
+	monitorClient, err := monitor.NewClient(credential, regionId, monitorCP)
+	if err != nil {
+		return nil, err
+	}
+
+	return &TencentCloud{
+		billingClient: billingClient,
+		cvmClient:     cvmClient,
+		monitorClient: monitorClient,
+	}, nil
 }
 
 // ProviderType
@@ -217,25 +240,22 @@ func convCurrency(priceUnit string) (currency string) {
 
 func (p *TencentCloud) DescribeMetricList(ctx context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
 	// TODO implement me
-	panic("implement me")
-}
-
-func (p *TencentCloud) DescribeInstanceAttribute(ctx context.Context, param types.DescribeInstanceAttributeRequest) (types.DescribeInstanceAttribute, error) {
-	// TODO implement me
-	panic("implement me")
+	return types.DescribeMetricList{}, nil
 }
 
 func (p *TencentCloud) DescribeRegions(ctx context.Context, param types.DescribeRegionsRequest) (types.DescribeRegions, error) {
 	// TODO implement me
-	panic("implement me")
+	return types.DescribeRegions{}, nil
 }
 
 func (p *TencentCloud) DescribeInstanceBill(ctx context.Context, param types.DescribeInstanceBillRequest, isAll bool) (types.DescribeInstanceBill, error) {
-	// TODO implement me
-	panic("implement me")
+	return types.DescribeInstanceBill{}, nil
 }
 
 func (p *TencentCloud) QueryAvailableInstances(ctx context.Context, param types.QueryAvailableInstancesRequest) (types.QueryAvailableInstances, error) {
-	// TODO implement me
-	panic("implement me")
+	return types.QueryAvailableInstances{}, nil
+}
+
+func (p *TencentCloud) DescribeInstances(ctx context.Context, param types.DescribeInstancesRequest) (types.DescribeInstances, error) {
+	return types.DescribeInstances{}, nil
 }
