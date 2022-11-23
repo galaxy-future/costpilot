@@ -223,31 +223,23 @@ func IsValidMonth(month string) bool {
 
 func (p *AWSCloud) DescribeMetricList(ctx context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
 	// TODO implement me
-	panic("implement me")
+	return types.DescribeMetricList{}, nil
 }
 
 func (p *AWSCloud) DescribeRegions(ctx context.Context, param types.DescribeRegionsRequest) (types.DescribeRegions, error) {
 	// TODO implement me
-	panic("implement me")
+	return types.DescribeRegions{}, nil
 }
 
 func (p *AWSCloud) DescribeInstanceBill(ctx context.Context, param types.DescribeInstanceBillRequest, isAll bool) (types.DescribeInstanceBill, error) {
-
-	// TODO implement me
-	panic("implement me")
+	return types.DescribeInstanceBill{}, nil
 }
 
 func (p *AWSCloud) QueryAvailableInstances(ctx context.Context, param types.QueryAvailableInstancesRequest) (types.QueryAvailableInstances, error) {
-	// TODO implement me
-	panic("implement me")
+	return types.QueryAvailableInstances{}, nil
 }
 
 func (p *AWSCloud) DescribeInstances(ctx context.Context, param types.DescribeInstancesRequest) (types.DescribeInstances, error) {
 	// TODO implement me
-	panic("implement me")
-}
-
-func (p *AWSCloud) DescribeZones(ctx context.Context, param types.DescribeZonesRequest) (types.DescribeZones, error) {
-	// TODO implement me
-	panic("implement me")
+	return types.DescribeInstances{}, nil
 }

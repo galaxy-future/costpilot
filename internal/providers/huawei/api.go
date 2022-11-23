@@ -143,12 +143,10 @@ func (p *HuaweiCloud) DescribeRegions(ctx context.Context, param types.DescribeR
 }
 
 func (p *HuaweiCloud) DescribeInstanceBill(ctx context.Context, param types.DescribeInstanceBillRequest, isAll bool) (types.DescribeInstanceBill, error) {
-	// TODO implement me
 	return types.DescribeInstanceBill{}, nil
 }
 
 func (p *HuaweiCloud) QueryAvailableInstances(ctx context.Context, param types.QueryAvailableInstancesRequest) (types.QueryAvailableInstances, error) {
-	// TODO implement me
 	return types.QueryAvailableInstances{}, nil
 }
 
@@ -300,10 +298,5 @@ func (p *HuaweiCloud) queryAccountBillByDate(ctx context.Context, param types.Qu
 
 func (p *HuaweiCloud) DescribeInstances(ctx context.Context, param types.DescribeInstancesRequest) (types.DescribeInstances, error) {
 	// TODO implement me
-	panic("implement me")
-}
-
-func (p *HuaweiCloud) DescribeZones(ctx context.Context, param types.DescribeZonesRequest) (types.DescribeZones, error) {
-	// TODO implement me
-	panic("implement me")
+	return types.DescribeInstances{}, nil
 }

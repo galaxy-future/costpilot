@@ -247,36 +247,18 @@ func (s *UtilizationDataReader) GetAllRegionMap(ctx context.Context) (map[string
 	return result, nil
 }
 
-func (s *UtilizationDataReader) GetAllZoneMap(ctx context.Context, p providers.Provider, regionId string, isAvailable bool) (map[string]string, error) {
-	result := make(map[string]string)
-	resp, err := p.DescribeZones(ctx, types.DescribeZonesRequest{
-		RegionId:  regionId,
-		Available: isAvailable,
-	})
-	if err != nil {
-		return result, err
-	}
-	for _, region := range resp.List {
-		result[region.ZoneId] = region.ZoneName
-	}
-	return result, nil
-}
-
-func (s *UtilizationDataReader) GetInstanceByZones(ctx context.Context, p providers.Provider, zoneIdList []string) ([]data.InstanceDetail, error) {
+func (s *UtilizationDataReader) GetInstanceByRegionProvider(ctx context.Context, p providers.Provider, regionId string) ([]data.InstanceDetail, error) {
 	var result []data.InstanceDetail
 
-	resp, err := p.DescribeInstances(ctx, types.DescribeInstancesRequest{
-		ZoneIdList: zoneIdList,
-	})
+	resp, err := p.DescribeInstances(ctx, types.DescribeInstancesRequest{})
 	if err != nil {
 		return result, err
 	}
 	for _, i := range resp.List {
 		result = append(result, data.InstanceDetail{
-			Provider:         s._provider.ProviderType(),
+			Provider:         p.ProviderType(),
 			InstanceId:       i.InstanceId,
-			RegionId:         i.RegionId,
-			RegionName:       i.RegionName,
+			RegionId:         regionId,
 			SubscriptionType: i.SubscriptionType,
 		})
 	}

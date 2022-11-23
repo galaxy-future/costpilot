@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"sort"
-	"strings"
 	"sync"
 	"time"
 
@@ -23,15 +22,15 @@ type UtilizationDataBean struct {
 	provider     providers.Provider
 	dataReader   *datareader.UtilizationDataReader
 
-	dateRange     tools.BillingDate
-	regionMap     map[string]string                // k->v: regionId->regionName
-	regionZoneMap map[string][]string              // k->v: regionId->[]zoneId
-	instanceMap   map[string][]data.InstanceDetail // k->v: regionId->[]data.InstanceDetail
+	dateRange          tools.BillingDate
+	regionMap          map[string]string                // k->v: regionId->regionName
+	regionInstancesMap map[string][]data.InstanceDetail // k->v: regionId->[]data.InstanceDetail
+	allInstancesMap    map[string]data.InstanceDetail   // k->v: instanceId->[]data.InstanceDetail
 
 	dailyCpu    sync.Map // 2022-01-02 -> data.DailyCpuUtilization
 	dailyMemory sync.Map // 2022-01-02 -> data.DailyCpuUtilization
 
-	instancesMap sync.Map // providerType+instanceId -> data.InstanceDetail
+	recentInstancesMap sync.Map // providerType+instanceId -> data.InstanceDetail
 
 	bp *tools.BillingDatePilot
 
@@ -40,9 +39,11 @@ type UtilizationDataBean struct {
 
 func NewUtilization(a types.CloudAccount, t time.Time) *UtilizationDataBean {
 	s := &UtilizationDataBean{
-		cloudAccount: a,
-		dateRange:    tools.BillingDate{},
-		bp:           tools.NewBillDatePilot().SetNowT(t),
+		cloudAccount:       a,
+		dateRange:          tools.BillingDate{},
+		bp:                 tools.NewBillDatePilot().SetNowT(t),
+		regionInstancesMap: make(map[string][]data.InstanceDetail),
+		allInstancesMap:    make(map[string]data.InstanceDetail),
 	}
 	s.initProvider(a)
 	s.initDataReader()
@@ -84,49 +85,28 @@ func (s *UtilizationDataBean) loadRegionMap(ctx context.Context) error {
 	return nil
 }
 
-func (s *UtilizationDataBean) loadAllZones(ctx context.Context) error {
-	var err error
-	regionMap := make(map[string]string)
-	regionZonesMap := make(map[string][]string)
-	regionMap, err = s.dataReader.GetAllRegionMap(ctx)
-	if err != nil {
-		log.Printf("E! loadAllZones.GetAllRegionMap:%v", err)
-		return err
-	}
-	if len(regionMap) == 0 {
-		return nil
-	}
-	for region, _ := range regionMap {
-		if !strings.Contains(region, "beijing") && !strings.Contains(region, "shanghai") && !strings.Contains(region, "guangzhou") {
-			continue
-		}
-		p := s.newRegionProvider(region)
-		zoneMap, err := s.dataReader.GetAllZoneMap(ctx, p, region, true)
-		if err != nil {
-			log.Printf("E! loadAllZones.GetAllZoneMap:%v", err)
-			return err
-		}
-		for id, _ := range zoneMap {
-			regionZonesMap[region] = append(regionZonesMap[region], id)
-		}
-	}
-
-	s.regionZoneMap = regionZonesMap
-	log.Printf("I! loadAllZones success,len=%d", len(regionZonesMap))
-	return nil
-}
-
 func (s *UtilizationDataBean) getAllInstances(ctx context.Context) error {
-	for regionId, zoneIdList := range s.regionZoneMap {
+	for regionId, _ := range s.regionMap {
 		p := s.newRegionProvider(regionId)
-		instanceList, err := s.dataReader.GetInstanceByZones(ctx, p, zoneIdList)
+		instanceList, err := s.dataReader.GetInstanceByRegionProvider(ctx, p, regionId)
 		if err != nil {
 			log.Printf("E! getAllInstances.GetInstanceByZones:%v", err)
 			return err
 		}
-		s.instanceMap[regionId] = append(s.instanceMap[regionId], instanceList...)
+		if len(instanceList) == 0 {
+			continue
+		}
+		s.regionInstancesMap[regionId] = instanceList
+		for _, detail := range instanceList {
+			regionName, yes := s.regionMap[detail.RegionId]
+			if !yes {
+				regionName = "未知"
+			}
+			detail.RegionName = regionName
+			s.allInstancesMap[detail.InstanceId] = detail
+		}
 	}
-	log.Printf("I! getAllInstances success,len=%d", len(s.instanceMap))
+	log.Printf("I! getAllInstances success,len=%d", len(s.allInstancesMap))
 	return nil
 }
 
@@ -203,8 +183,8 @@ func (s *UtilizationDataBean) fetchCpuUtilizationByInstanceIds(ctx context.Conte
 	})
 	log.Printf("I! fetchCpuUtilizationByInstanceIds days: %v", days)
 
-	for regionId, instanceList := range s.instanceMap {
-		var ids = make([]string, len(instanceList))
+	for regionId, instanceList := range s.regionInstancesMap {
+		var ids = make([]string, 0, len(instanceList))
 		for _, i := range instanceList {
 			ids = append(ids, i.InstanceId)
 		}
@@ -267,7 +247,7 @@ func (s *UtilizationDataBean) fetchMemoryUtilizationByInstanceIds(ctx context.Co
 	})
 	log.Printf("I! fetchMemoryUtilizationByInstanceIds days: %v", days)
 
-	for regionId, instanceList := range s.instanceMap {
+	for regionId, instanceList := range s.regionInstancesMap {
 		var ids = make([]string, len(instanceList))
 		for _, i := range instanceList {
 			ids = append(ids, i.InstanceId)
@@ -278,7 +258,7 @@ func (s *UtilizationDataBean) fetchMemoryUtilizationByInstanceIds(ctx context.Co
 			return err
 		}
 		for _, v := range memoryData {
-			d, ok := s.dailyCpu.Load(v.Day)
+			d, ok := s.dailyMemory.Load(v.Day)
 			if ok {
 				memoryDay := d.(data.DailyMemoryUtilization)
 				memoryDay.Utilization = append(memoryDay.Utilization, v.Utilization...)
@@ -316,7 +296,7 @@ func (s *UtilizationDataBean) fetchRecentInstanceList(ctx context.Context) error
 	for _, detail := range instanceList {
 		k := fmt.Sprintf("%s:%s", s.provider.ProviderType(), detail.InstanceId)
 		if len(detail.RegionName) > 0 {
-			s.instancesMap.Store(k, detail)
+			s.recentInstancesMap.Store(k, detail)
 			continue
 		}
 		var regionName string
@@ -325,26 +305,46 @@ func (s *UtilizationDataBean) fetchRecentInstanceList(ctx context.Context) error
 			regionName = "未知"
 		}
 		detail.RegionName = regionName
-		s.instancesMap.Store(k, detail)
+		s.recentInstancesMap.Store(k, detail)
 	}
 	return nil
 }
 
 func (s *UtilizationDataBean) getRecentInstanceListFromLocal(ctx context.Context) error {
+	d := s.bp.GetRecentDayBillingDate()
+	recentDay := d.Days[0]
+	v, ok := s.dailyCpu.Load(recentDay)
+	if !ok {
+		return errors.New("no instance running")
+	}
+	if len(s.regionMap) == 0 {
+		return errors.New("you must reload region map firstly")
+	}
+	vv := v.(data.DailyCpuUtilization)
+	for _, u := range vv.Utilization {
+		fmt.Printf("getRecentInstanceListFromLocal：%v\n", u)
+		key := fmt.Sprintf("%s:%s", s.provider.ProviderType(), u.InstanceId)
+		if d, ok := s.allInstancesMap[u.InstanceId]; ok {
+			s.recentInstancesMap.Store(key, d)
+		}
+	}
 	return nil
 }
 
 func (s *UtilizationDataBean) GetUtilizationAnalysisPipeLine() []func(context.Context) error {
 	var pipeLine []func(context.Context) error
 
+	pipeLine = append(pipeLine,
+		s.loadRegionMap,
+	)
+
 	// 有的厂商要先去拉取所有实例，然后才能去抓监控数据
 	if s.provider.ProviderType() != cloud.AlibabaCloud {
-		pipeLine = append(pipeLine, s.loadAllZones, s.getAllInstances)
+		pipeLine = append(pipeLine, s.getAllInstances)
 	}
 
 	// 通用处理
 	pipeLine = append(pipeLine,
-		s.loadRegionMap,
 		s.getRecentDay,
 		s.getPreviousDay,
 		s.getRecent14DaysDate,
@@ -375,5 +375,5 @@ func (s *UtilizationDataBean) RunPipeline(ctx context.Context) error {
 }
 
 func (s *UtilizationDataBean) GetUtilizationMap() (*sync.Map, *sync.Map, *sync.Map) {
-	return &s.dailyCpu, &s.dailyMemory, &s.instancesMap
+	return &s.dailyCpu, &s.dailyMemory, &s.recentInstancesMap
 }

@@ -127,6 +127,7 @@ type DescribeInstancesRequest struct {
 	// optional
 	InstanceIds []string
 }
+
 type ItemDescribeInstance struct {
 	InstanceId         string
 	InstanceName       string

@@ -240,30 +240,22 @@ func convCurrency(priceUnit string) (currency string) {
 
 func (p *TencentCloud) DescribeMetricList(ctx context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
 	// TODO implement me
-	panic("implement me")
+	return types.DescribeMetricList{}, nil
 }
 
 func (p *TencentCloud) DescribeRegions(ctx context.Context, param types.DescribeRegionsRequest) (types.DescribeRegions, error) {
 	// TODO implement me
-	panic("implement me")
+	return types.DescribeRegions{}, nil
 }
 
 func (p *TencentCloud) DescribeInstanceBill(ctx context.Context, param types.DescribeInstanceBillRequest, isAll bool) (types.DescribeInstanceBill, error) {
-	// TODO implement me
-	panic("implement me")
+	return types.DescribeInstanceBill{}, nil
 }
 
 func (p *TencentCloud) QueryAvailableInstances(ctx context.Context, param types.QueryAvailableInstancesRequest) (types.QueryAvailableInstances, error) {
-	// TODO implement me
-	panic("implement me")
+	return types.QueryAvailableInstances{}, nil
 }
 
-func (p *TencentCloud) DescribeZones(ctx context.Context, request types.DescribeZonesRequest) (types.DescribeZones, error) {
-	// TODO implement me
-	panic("implement me")
-}
-
-func (p *TencentCloud) DescribeInstances(ctx context.Context, request types.DescribeInstancesRequest) (types.DescribeInstances, error) {
-	// TODO implement me
-	panic("implement me")
+func (p *TencentCloud) DescribeInstances(ctx context.Context, param types.DescribeInstancesRequest) (types.DescribeInstances, error) {
+	return types.DescribeInstances{}, nil
 }

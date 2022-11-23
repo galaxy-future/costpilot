@@ -46,36 +46,29 @@ func (*BaiduCloud) ProviderType() cloud.Provider {
 
 // QueryAccountBill
 func (p *BaiduCloud) QueryAccountBill(ctx context.Context, param types.QueryAccountBillRequest) (types.DataInQueryAccountBill, error) {
-
 	return types.DataInQueryAccountBill{}, nil
 }
 
 func (p *BaiduCloud) DescribeMetricList(ctx context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
 	// TODO implement me
-	panic("implement me")
+	return types.DescribeMetricList{}, nil
 }
 
 func (p *BaiduCloud) DescribeRegions(ctx context.Context, param types.DescribeRegionsRequest) (types.DescribeRegions, error) {
 	// TODO implement me
-	panic("implement me")
+	return types.DescribeRegions{}, nil
 }
 
 func (p *BaiduCloud) DescribeInstanceBill(ctx context.Context, param types.DescribeInstanceBillRequest, isAll bool) (types.DescribeInstanceBill, error) {
-	// TODO implement me
-	panic("implement me")
+	return types.DescribeInstanceBill{}, nil
 }
 
 func (p *BaiduCloud) QueryAvailableInstances(ctx context.Context, param types.QueryAvailableInstancesRequest) (types.QueryAvailableInstances, error) {
 	// TODO implement me
-	panic("implement me")
+	return types.QueryAvailableInstances{}, nil
 }
 
 func (p *BaiduCloud) DescribeInstances(ctx context.Context, param types.DescribeInstancesRequest) (types.DescribeInstances, error) {
-
-	return types.DescribeInstances{}, nil
-}
-
-func (p *BaiduCloud) DescribeZones(ctx context.Context, param types.DescribeZonesRequest) (types.DescribeZones, error) {
 	// TODO implement me
-	panic("implement me")
+	return types.DescribeInstances{}, nil
 }

@@ -341,6 +341,7 @@ func convInstanceBill(respData *bssopenapiV3.DescribeInstanceBillResponseBodyDat
 	}
 	return result
 }
+
 func convSubscriptionTypeAliyunToCloud(subscriptionType string) cloud.SubscriptionType {
 	switch subscriptionType {
 	case "Subscription":
@@ -438,10 +439,5 @@ func convAvailableInstances(respData *bssopenapiV3.QueryAvailableInstancesRespon
 
 func (p *AlibabaCloud) DescribeInstances(ctx context.Context, param types.DescribeInstancesRequest) (types.DescribeInstances, error) {
 	// TODO implement me
-	panic("implement me")
-}
-
-func (p *AlibabaCloud) DescribeZones(ctx context.Context, param types.DescribeZonesRequest) (types.DescribeZones, error) {
-	// TODO implement me
-	panic("implement me")
+	return types.DescribeInstances{}, nil
 }

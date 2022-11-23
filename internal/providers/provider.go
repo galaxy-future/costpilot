@@ -30,8 +30,6 @@ type Provider interface {
 
 	// DescribeRegions list all regions as the RegionId and RegionName map.
 	DescribeRegions(context.Context, types.DescribeRegionsRequest) (types.DescribeRegions, error)
-	// DescribeZones list all available zone of a region
-	DescribeZones(context.Context, types.DescribeZonesRequest) (types.DescribeZones, error)
 	// DescribeInstances Describes the specified instances or all instances.
 	DescribeInstances(context.Context, types.DescribeInstancesRequest) (types.DescribeInstances, error)
 
