@@ -12,6 +12,7 @@ import (
 
 type BaiduCloud struct {
 	bccClient *bcc.Client
+	bcmClient *BCMClient
 }
 
 var EndPoints = map[string]string{
@@ -33,9 +34,9 @@ func New(ak, sk, regionId string) (*BaiduCloud, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return &BaiduCloud{
 		bccClient: bccClient,
+		bcmClient: NewBCMClient(ak, sk, ep),
 	}, nil
 }
 
@@ -49,6 +50,8 @@ func (p *BaiduCloud) QueryAccountBill(ctx context.Context, param types.QueryAcco
 	return types.DataInQueryAccountBill{}, nil
 }
 
+// DescribeMetricList
+// 在使用 BCMClient.Send 方法请求时，注意参数顺序，参看 TestBceClient_Send
 func (p *BaiduCloud) DescribeMetricList(ctx context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
 	// TODO implement me
 	return types.DescribeMetricList{}, nil
