@@ -67,7 +67,6 @@ func (p *BaiduCloud) DescribeInstanceBill(ctx context.Context, param types.Descr
 }
 
 func (p *BaiduCloud) QueryAvailableInstances(ctx context.Context, param types.QueryAvailableInstancesRequest) (types.QueryAvailableInstances, error) {
-	// TODO implement me
 	return types.QueryAvailableInstances{}, nil
 }
 
