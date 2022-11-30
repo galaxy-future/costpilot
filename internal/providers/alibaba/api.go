@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -195,26 +196,40 @@ func (p *AlibabaCloud) DescribeMetricList(_ context.Context, param types.Describ
 		Period:     tea.String(param.Period),
 		StartTime:  tea.String(param.StartTime.Format("2006-01-02T15:04:05Z")),
 		EndTime:    tea.String(param.EndTime.Format("2006-01-02T15:04:05Z")),
+		Length:     tea.String("100"),
 	}
-	response, err := p.cmsClient.DescribeMetricList(request)
-	if err != nil {
-		return types.DescribeMetricList{}, err
-	}
-	if *response.StatusCode != http.StatusOK {
-		return types.DescribeMetricList{}, fmt.Errorf("httpcode %d", *response.StatusCode)
-	}
-	if response.Body == nil || response.Body.Datapoints == nil {
-		return types.DescribeMetricList{}, nil
-	}
-	dataStr := *response.Body.Datapoints
-	var dataList []*Datapoint
-	if err := json.Unmarshal([]byte(dataStr), &dataList); err != nil {
-		return types.DescribeMetricList{}, nil
+	var allDataList []*Datapoint
+	page := 0
+	for {
+		log.Printf("I! Fecth metrics for page[%d]\n", page)
+		response, err := p.cmsClient.DescribeMetricList(request)
+		if err != nil {
+			return types.DescribeMetricList{}, err
+		}
+		if *response.StatusCode != http.StatusOK {
+			return types.DescribeMetricList{}, fmt.Errorf("httpcode %d", *response.StatusCode)
+		}
+		if response.Body == nil || response.Body.Datapoints == nil {
+			return types.DescribeMetricList{}, nil
+		}
+		dataStr := *response.Body.Datapoints
+		var dataList []*Datapoint
+		if err := json.Unmarshal([]byte(dataStr), &dataList); err != nil {
+			return types.DescribeMetricList{}, nil
+		}
+		if len(dataList) > 0 {
+			allDataList = append(allDataList, dataList...)
+		}
+		if response.Body.NextToken == nil {
+			break
+		} else {
+			request.NextToken = tea.String(*response.Body.NextToken)
+			page++
+		}
 	}
 
-	ret := types.DescribeMetricList{List: make([]types.MetricSample, 0, len(dataList))}
-
-	for _, datapoint := range dataList {
+	ret := types.DescribeMetricList{List: make([]types.MetricSample, 0, len(allDataList))}
+	for _, datapoint := range allDataList {
 		d := types.MetricSample{
 			InstanceId: datapoint.InstanceId,
 			Min:        datapoint.Minimum,
