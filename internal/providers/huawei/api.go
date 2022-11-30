@@ -2,6 +2,8 @@ package huawei
 
 import (
 	"context"
+	"strconv"
+
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/galaxy-future/costpilot/internal/constants/cloud"
 	"github.com/galaxy-future/costpilot/internal/providers/types"
@@ -10,7 +12,6 @@ import (
 	bss "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2"
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2/model"
 	regionHuawei "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2/region"
-	"strconv"
 )
 
 type HuaweiCloud struct {
