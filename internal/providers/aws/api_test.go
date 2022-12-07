@@ -8,8 +8,11 @@ import (
 	"github.com/galaxy-future/costpilot/internal/providers/types"
 )
 
-var _AK = ""
-var _SK = ""
+var (
+	_AK = ""
+	_SK = ""
+	cli *AWSCloud
+)
 
 func TestAWSCloud_QueryAccountBill(t *testing.T) {
 	type args struct {

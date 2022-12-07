@@ -27,7 +27,6 @@ type AWSCloud struct {
 }
 
 func New(AK, SK, regionId string) (*AWSCloud, error) {
-
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(regionId), config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(AK, SK, "")))
 	if err != nil {
 		return nil, err
@@ -230,25 +229,10 @@ func IsValidMonth(month string) bool {
 	return true
 }
 
-func (p *AWSCloud) DescribeMetricList(ctx context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
-	// TODO implement me
-	return types.DescribeMetricList{}, nil
-}
-
-func (p *AWSCloud) DescribeRegions(ctx context.Context, param types.DescribeRegionsRequest) (types.DescribeRegions, error) {
-	// TODO implement me
-	return types.DescribeRegions{}, nil
-}
-
 func (p *AWSCloud) DescribeInstanceBill(ctx context.Context, param types.DescribeInstanceBillRequest, isAll bool) (types.DescribeInstanceBill, error) {
 	return types.DescribeInstanceBill{}, nil
 }
 
 func (p *AWSCloud) QueryAvailableInstances(ctx context.Context, param types.QueryAvailableInstancesRequest) (types.QueryAvailableInstances, error) {
 	return types.QueryAvailableInstances{}, nil
-}
-
-func (p *AWSCloud) DescribeInstances(ctx context.Context, param types.DescribeInstancesRequest) (types.DescribeInstances, error) {
-	// TODO implement me
-	return types.DescribeInstances{}, nil
 }
