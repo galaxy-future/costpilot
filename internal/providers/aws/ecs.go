@@ -65,12 +65,13 @@ func (p *AWSCloud) DescribeInstances(ctx context.Context, param types.DescribeIn
 	if output.Reservations != nil {
 		for _, reservation := range output.Reservations {
 			for _, instance := range reservation.Instances {
+				region := aws.StringValue(instance.Placement.AvailabilityZone)
 				newInstance := types.ItemDescribeInstance{
 					InstanceId:   aws.StringValue(instance.InstanceId),
 					InstanceName: aws.StringValue(instance.Tags[0].Value),
 					RegionId:     aws.StringValue(instance.Placement.AvailabilityZone),
-					/*RegionName:         "",
-					HostName:           "",
+					RegionName:   _regionLocalName[region[0:len(region)-1]],
+					/*HostName:           "",
 					SubscriptionType:   "",
 					InternetChargeType: "",*/
 					PublicIpAddress: []string{aws.StringValue(instance.PublicIpAddress)},

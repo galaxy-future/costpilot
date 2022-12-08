@@ -24,7 +24,9 @@ func TestAWSCloud_DescribeRegions(t *testing.T) {
 }
 
 func TestAWSCloud_DescribeInstances(t *testing.T) {
-	instances, err := cli.DescribeInstances(context.Background(), types.DescribeInstancesRequest{})
+	instances, err := cli.DescribeInstances(context.Background(), types.DescribeInstancesRequest{
+		InstanceIds: []string{"i-09491347f48116001"},
+	})
 	t.Log(instances)
 	t.Log(err)
 }
