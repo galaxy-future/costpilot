@@ -53,13 +53,20 @@ To run CostPilot in Docker, you need to install Docker first. For more informati
     docker run --env COSTPILOT_PROVIDER=AlibabaCloud --env COSTPILOT_AK=abc --env COSTPILOT_SK=abc --env COSTPILOT_REGION_ID=cn-beijing -p 8504:8504 --name=costpilot galaxy-future/costpilot
     ```
 * (2) Use a configuration file. You can analyze multiple cloud accounts at a time if you use this method.
-  - Create your own config.yaml file, and then execute the following command. Replace /tmp/config.yaml with the absolute path of your config.yaml file.
+  - Create your own config.yaml file, and then execute the following command. Replace /tmp/config.yaml with the absolute
+    path of your config.yaml file.
     ```shell
     docker run --mount type=bind,source=/tmp/config.yaml,target=/home/tiger/app/conf/config.yaml -p 8504:8504 --name=costpilot galaxy-future/costpilot
     ```
+
 #### 4. Sample Result
+
 ![bill](https://user-images.githubusercontent.com/78481036/201895818-d3866cae-594c-492f-8ee4-d2b5fb4617b9.png)
 ![utilization](https://user-images.githubusercontent.com/78481036/201895847-c1a7879e-5008-454f-8e56-220f549237a0.png)
+
+#### 5. Data Flow Diagram
+
+![costpilot-architecture](docs/costpilot-architecture.png)
 
 Code of Conduct
 ------
@@ -68,7 +75,8 @@ Code of Conduct
 Authorization
 -----
 
-CostPilot uses [Apache License 2.0](https://github.com/galaxy-future/costpilot/blob/master/LICENSE) licensing agreement for authorization.
+CostPilot uses [Apache License 2.0](https://github.com/galaxy-future/costpilot/blob/master/LICENSE) licensing agreement
+for authorization.
 
 Contact Us
 -----

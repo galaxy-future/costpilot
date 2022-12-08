@@ -52,14 +52,20 @@ CostPilot 是星汉未来基于先进的 FinOps 理念开发的一站式全场�
       docker run --env COSTPILOT_PROVIDER=AlibabaCloud --env COSTPILOT_AK=abc --env COSTPILOT_SK=abc --env COSTPILOT_REGION_ID=cn-beijing -p 8504:8504 --name=costpilot galaxy-future/costpilot
       ```
 * (2) 通过配置文件的方式运行 (此方式支持并行分析多个云账户)
-    - 创建一个新的 config.yaml (填写完配置), 执行下面的 docker 命令(注意替换 '/tmp/config.yaml' 为真实的 config.yaml 绝对路径)
+    - 创建一个新的 config.yaml (填写完配置), 执行下面的 docker 命令(注意替换 '/tmp/config.yaml' 为真实的 config.yaml
+      绝对路径)
       ```shell
       docker run --mount type=bind,source=/tmp/config.yaml,target=/home/tiger/app/conf/config.yaml -p 8504:8504 --name=costpilot galaxy-future/costpilot
       ```
 
 #### 4. 效果展示
+
 ![bill](https://user-images.githubusercontent.com/78481036/201896066-be0c490a-d7af-4a39-a527-ce1c6dfbe0ab.png)
 ![utilization](https://user-images.githubusercontent.com/78481036/201896071-e9ea6d37-63a4-4969-82d9-16a12d3ed88a.png)
+
+#### 5. 数据流图
+
+![costpilot-architecture](costpilot-architecture.png)
 
 行为准则
 ------
@@ -68,7 +74,8 @@ CostPilot 是星汉未来基于先进的 FinOps 理念开发的一站式全场�
 授权
 -----
 
-CostPilot uses [Apache License 2.0](https://github.com/galaxy-future/costpilot/blob/dev/LICENSE) licensing agreement for authorization
+CostPilot uses [Apache License 2.0](https://github.com/galaxy-future/costpilot/blob/dev/LICENSE) licensing agreement for
+authorization
 
 联系我们
 -----
