@@ -6,7 +6,6 @@ import (
 	"fmt"
 	cloudwatchType "github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 	ec2Types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"log"
 	"strconv"
 	"time"
@@ -237,14 +236,7 @@ func (p *AWSCloud) DescribeRegions(ctx context.Context, param types.DescribeRegi
 	input := &ec2.DescribeRegionsInput{}
 	response, err := p.ec2Client.DescribeRegions(ctx, input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			default:
-				log.Println(aerr.Error())
-			}
-		} else {
-			log.Println(err.Error())
-		}
+		log.Println(err.Error())
 		return types.DescribeRegions{}, err
 	}
 	if response.Regions != nil {
@@ -269,14 +261,7 @@ func (p *AWSCloud) DescribeInstances(ctx context.Context, param types.DescribeIn
 	}
 	output, err := p.ec2Client.DescribeInstances(ctx, input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			default:
-				log.Println(aerr.Error())
-			}
-		} else {
-			log.Println(err.Error())
-		}
+		log.Println(err.Error())
 	}
 	if output.Reservations != nil {
 		reservedInstances, err1 := p.describeReservedInstances(ctx)
@@ -294,14 +279,7 @@ func (p *AWSCloud) describeReservedInstances(ctx context.Context) (map[string]st
 	reservedInstances := make(map[string]string, 0)
 	output, err := p.ec2Client.DescribeReservedInstances(ctx, &ec2.DescribeReservedInstancesInput{})
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			default:
-				log.Println(aerr.Error())
-			}
-		} else {
-			log.Println(err.Error())
-		}
+		log.Println(err.Error())
 		return reservedInstances, err
 	}
 	if output.ReservedInstances != nil {
@@ -394,14 +372,7 @@ func (p *AWSCloud) DescribeMetricList(ctx context.Context, param types.DescribeM
 	request, ids := convDescribeMetricListRequest(param)
 	output, err := p.cloudWatch.GetMetricData(ctx, request)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			default:
-				log.Println(aerr.Error())
-			}
-		} else {
-			log.Println(err.Error())
-		}
+		log.Println(err.Error())
 		return types.DescribeMetricList{}, err
 	}
 	if output.MetricDataResults != nil {
