@@ -2,10 +2,11 @@ package aws
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/galaxy-future/costpilot/internal/providers/types"
 )
@@ -119,7 +120,7 @@ func TestAWSCloud_DescribeRegions(t *testing.T) {
 
 func TestAWSCloud_DescribeInstances(t *testing.T) {
 	instances, err := cli.DescribeInstances(context.Background(), types.DescribeInstancesRequest{
-		//InstanceIds: []string{"i-09491347f48116001"},
+		InstanceIds: []string{"i-0b0a8ad4cd000639a"},
 	})
 	t.Log(instances)
 	t.Log(err)
@@ -133,7 +134,7 @@ func TestAWSCloud_DescribeMetricList(t *testing.T) {
 		EndTime:   endTime,
 		Period:    "86400",
 		Filter: types.MetricListInstanceFilter{
-			InstanceIds: []string{"i-09491347f48116001"},
+			InstanceIds: []string{"i-0b0a8ad4cd000639a"},
 		},
 		MetricName: types.MetricItemCPUUtilization,
 	})
@@ -144,7 +145,7 @@ func TestAWSCloud_DescribeMetricList(t *testing.T) {
 		EndTime:   endTime,
 		Period:    "86400",
 		Filter: types.MetricListInstanceFilter{
-			InstanceIds: []string{"i-09491347f48116001"},
+			InstanceIds: []string{"i-0b0a8ad4cd000639a"},
 		},
 		MetricName: types.MetricItemMemoryUsedUtilization,
 	})

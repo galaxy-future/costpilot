@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	cloudwatchType "github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
-	ec2Types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"log"
 	"strconv"
 	"time"
+
+	cloudwatchType "github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
+	ec2Types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
@@ -239,6 +240,9 @@ func (p *AWSCloud) DescribeRegions(ctx context.Context, param types.DescribeRegi
 		log.Println(err.Error())
 		return types.DescribeRegions{}, err
 	}
+	if response.Regions == nil || len(response.Regions) == 0 {
+		return types.DescribeRegions{}, nil
+	}
 	if response.Regions != nil {
 		itemRegions := make([]types.ItemRegion, 0, len(response.Regions))
 		for _, regin := range response.Regions {
@@ -250,9 +254,9 @@ func (p *AWSCloud) DescribeRegions(ctx context.Context, param types.DescribeRegi
 		}
 		return types.DescribeRegions{
 			List: itemRegions,
-		}, err
+		}, nil
 	}
-	return types.DescribeRegions{}, err
+	return types.DescribeRegions{}, nil
 }
 
 func (p *AWSCloud) DescribeInstances(ctx context.Context, param types.DescribeInstancesRequest) (types.DescribeInstances, error) {
@@ -262,6 +266,10 @@ func (p *AWSCloud) DescribeInstances(ctx context.Context, param types.DescribeIn
 	output, err := p.ec2Client.DescribeInstances(ctx, input)
 	if err != nil {
 		log.Println(err.Error())
+		return types.DescribeInstances{}, err
+	}
+	if output.Reservations == nil || len(output.Reservations) == 0 {
+		return types.DescribeInstances{}, nil
 	}
 	if output.Reservations != nil {
 		reservedInstances, err1 := p.describeReservedInstances(ctx)
@@ -282,6 +290,9 @@ func (p *AWSCloud) describeReservedInstances(ctx context.Context) (map[string]st
 		log.Println(err.Error())
 		return reservedInstances, err
 	}
+	if output.ReservedInstances == nil || len(output.ReservedInstances) == 0 {
+		return reservedInstances, nil
+	}
 	if output.ReservedInstances != nil {
 		for _, reservation := range output.ReservedInstances {
 			if ec2Types.ReservedInstanceStateActive == reservation.State {
@@ -289,14 +300,13 @@ func (p *AWSCloud) describeReservedInstances(ctx context.Context) (map[string]st
 			}
 		}
 	}
-	return reservedInstances, err
+	return reservedInstances, nil
 }
 
 func convDescribeInstances(reservations []ec2Types.Reservation, reservedInstances map[string]string) types.DescribeInstances {
 	awsInstances := make([]types.ItemDescribeInstance, 0)
 	for _, reservation := range reservations {
 		for _, instance := range reservation.Instances {
-			region := aws.StringValue(instance.Placement.AvailabilityZone)
 			subscriptionType := cloud.PostPaid
 			for k, v := range reservedInstances {
 				if string(instance.InstanceType) == v {
@@ -307,8 +317,6 @@ func convDescribeInstances(reservations []ec2Types.Reservation, reservedInstance
 			newInstance := types.ItemDescribeInstance{
 				InstanceId:       aws.StringValue(instance.InstanceId),
 				InstanceName:     aws.StringValue(instance.Tags[0].Value),
-				RegionId:         region[0 : len(region)-1],
-				RegionName:       region[0 : len(region)-1],
 				SubscriptionType: subscriptionType,
 				PublicIpAddress:  []string{aws.StringValue(instance.PublicIpAddress)},
 				InnerIpAddress:   []string{aws.StringValue(instance.PrivateIpAddress)},
@@ -327,19 +335,19 @@ func convDescribeMetricListRequest(param types.DescribeMetricListRequest) (*clou
 	metricDataQueries := []cloudwatchType.MetricDataQuery{}
 	var nameSpace, metricName, label string
 	if types.MetricItemCPUUtilization == param.MetricName {
-		nameSpace = Namespace_Cpu
-		metricName = CPUUtilization
-		label = CPUUtilization
+		nameSpace = _namespace_Cpu
+		metricName = _cpuUtilization
+		label = _cpuUtilization
 	}
 	if types.MetricItemMemoryUsedUtilization == param.MetricName {
-		nameSpace = Namespace_Mem
-		metricName = MemoryUtilization
-		label = MemoryUtilization
+		nameSpace = _namespace_Mem
+		metricName = _memoryUtilization
+		label = _memoryUtilization
 	}
 	period, _ := strconv.Atoi(param.Period)
 	for i, instanceId := range param.Filter.InstanceIds {
 		dimension := cloudwatchType.Dimension{
-			Name:  aws.String(InstanceId),
+			Name:  aws.String(_instanceId),
 			Value: aws.String(instanceId),
 		}
 		metricDataQuery := cloudwatchType.MetricDataQuery{
@@ -375,6 +383,9 @@ func (p *AWSCloud) DescribeMetricList(ctx context.Context, param types.DescribeM
 		log.Println(err.Error())
 		return types.DescribeMetricList{}, err
 	}
+	if output.MetricDataResults == nil || len(output.MetricDataResults) == 0 {
+		return types.DescribeMetricList{}, nil
+	}
 	if output.MetricDataResults != nil {
 		list := make([]types.MetricSample, 0)
 		for _, metricDataResult := range output.MetricDataResults {
@@ -392,9 +403,9 @@ func (p *AWSCloud) DescribeMetricList(ctx context.Context, param types.DescribeM
 		}
 		return types.DescribeMetricList{
 			List: list,
-		}, err
+		}, nil
 	}
-	return types.DescribeMetricList{}, err
+	return types.DescribeMetricList{}, nil
 }
 
 func (p *AWSCloud) DescribeInstanceBill(ctx context.Context, param types.DescribeInstanceBillRequest, isAll bool) (types.DescribeInstanceBill, error) {
