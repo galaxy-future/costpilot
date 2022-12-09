@@ -4,18 +4,29 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/galaxy-future/costpilot/internal/constants/cloud"
 	"github.com/galaxy-future/costpilot/internal/providers/types"
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/core/auth/global"
 	bss "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2"
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2/model"
 	regionHuawei "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2/region"
-	"testing"
 )
 
-var _AK = ""
-var _SK = ""
+var _AK = "AK"
+var _SK = "SK"
 var _REGION = "cn-north-1"
+var cli *HuaweiCloud
+
+func init() {
+	c, err := New(_AK, _SK, "cn-north-4")
+	if err != nil {
+		return
+	}
+	cli = c
+}
 
 func TestHuaweiCloud_QueryAccountBill(t *testing.T) {
 	type fields struct {
@@ -192,4 +203,41 @@ func testConvSubscriptionType(subscriptionType string) cloud.SubscriptionType {
 		return cloud.PostPaid
 	}
 	return "undefined"
+}
+
+func TestHuaweiCloud_DescribeRegions(t *testing.T) {
+	got, err := cli.DescribeRegions(nil, types.DescribeRegionsRequest{
+		Language: types.RegionLanguageZHCN,
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(got)
+}
+
+func TestHuaweiCloud_DescribeInstances(t *testing.T) {
+	got, err := cli.DescribeInstances(nil, types.DescribeInstancesRequest{
+		InstanceIds: []string{"a48e2e4f-4550-42be-99ed-24aba2d1e9ee"},
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(got)
+}
+
+func TestHuaweiCloud_DescribeMetricList(t *testing.T) {
+	got, err := cli.DescribeMetricList(nil, types.DescribeMetricListRequest{
+		MetricName: "cpu_util",
+		Period:     "1",
+		StartTime:  time.Now().Add(-time.Minute * 10),
+		EndTime:    time.Now(),
+		Filter:     types.MetricListInstanceFilter{InstanceIds: []string{"a48e2e4f-4550-42be-99ed-24aba2d1e9ee"}},
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(got)
 }

@@ -13,7 +13,9 @@ require (
 	github.com/aws/aws-sdk-go v1.44.144
 	github.com/aws/aws-sdk-go-v2/config v1.17.10
 	github.com/aws/aws-sdk-go-v2/credentials v1.12.23
+	github.com/aws/aws-sdk-go-v2/service/cloudwatch v1.21.11
 	github.com/aws/aws-sdk-go-v2/service/costexplorer v1.21.2
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.72.1
 	github.com/baidubce/bce-sdk-go v0.9.138
 	github.com/gin-gonic/gin v1.8.1
 	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.11
@@ -27,7 +29,7 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.542
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/monitor v1.0.542
 	go.uber.org/ratelimit v0.2.0
-	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
+	golang.org/x/sync v0.1.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -53,8 +55,6 @@ require (
 	github.com/alibabacloud-go/tea-utils v1.4.5 // indirect
 	github.com/alibabacloud-go/tea-xml v1.1.2 // indirect
 	github.com/aliyun/credentials-go v1.2.4 // indirect
-	github.com/aws/aws-sdk-go-v2/service/cloudwatch v1.21.11 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.72.1 // indirect
 	github.com/clbanning/mxj/v2 v2.5.7 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
@@ -72,9 +72,9 @@ require (
 	github.com/tjfoc/gmsm v1.4.1 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	golang.org/x/crypto v0.1.0 // indirect
-	golang.org/x/net v0.2.0 // indirect
-	golang.org/x/sys v0.2.0 // indirect
-	golang.org/x/text v0.4.0 // indirect
+	golang.org/x/net v0.3.0 // indirect
+	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/text v0.5.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

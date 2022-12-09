@@ -2,23 +2,37 @@ package huawei
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"strconv"
 
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/galaxy-future/costpilot/internal/constants/cloud"
 	"github.com/galaxy-future/costpilot/internal/providers/types"
 	"github.com/galaxy-future/costpilot/tools/limiter"
+	"github.com/huaweicloud/huaweicloud-sdk-go-v3/core/auth/basic"
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/core/auth/global"
 	bss "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2"
 	bssModel "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2/model"
 	regionHuawei "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/bss/v2/region"
 	ces "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ces/v1"
+	cesModel "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ces/v1/model"
+	cesRegion "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ces/v1/region"
 	ecs "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ecs/v2"
+	ecsModel "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ecs/v2/model"
 	ecsRegion "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ecs/v2/region"
 	iam "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/iam/v3"
+	iamModel "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/iam/v3/model"
 	iamRegion "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/iam/v3/region"
-	// cesModel "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ces/v1/model"
-	cesRegion "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ces/v1/region"
+)
+
+const (
+	_bssRegion       = "cn-north-1"
+	_chargingMode    = "charging_mode"
+	_floating        = "floating"
+	_instanceId      = "instance_id"
+	_average         = "average"
+	_namespaceSysECS = "SYS.ECS"
 )
 
 type HuaweiCloud struct {
@@ -34,7 +48,12 @@ func New(AK, SK, region string) (*HuaweiCloud, error) {
 		WithSk(SK).
 		Build()
 
-	bssClientOpt := bss.NewBssClient(bss.BssClientBuilder().WithRegion(regionHuawei.ValueOf(region)).WithCredential(auth).Build())
+	basicAuth := basic.NewCredentialsBuilder().
+		WithAk(AK).
+		WithSk(SK).
+		Build()
+
+	bssClientOpt := bss.NewBssClient(bss.BssClientBuilder().WithRegion(regionHuawei.ValueOf(_bssRegion)).WithCredential(auth).Build())
 
 	iamClient := iam.NewIamClient(
 		iam.IamClientBuilder().
@@ -45,13 +64,13 @@ func New(AK, SK, region string) (*HuaweiCloud, error) {
 	ecsClient := ecs.NewEcsClient(
 		ecs.EcsClientBuilder().
 			WithRegion(ecsRegion.ValueOf(region)).
-			WithCredential(auth).
+			WithCredential(basicAuth).
 			Build())
 
 	cesClient := ces.NewCesClient(
 		ces.CesClientBuilder().
 			WithRegion(cesRegion.ValueOf(region)).
-			WithCredential(auth).
+			WithCredential(basicAuth).
 			Build())
 
 	return &HuaweiCloud{
@@ -80,6 +99,7 @@ func (p *HuaweiCloud) QueryAccountBill(ctx context.Context, param types.QueryAcc
 
 	return result, nil
 }
+
 func convQueryAccountBillByMonth(param types.QueryAccountBillRequest, response *bssModel.ShowCustomerMonthlySumResponse) []types.AccountBillItem {
 	if response == nil || response.BillSums == nil {
 		return []types.AccountBillItem{}
@@ -97,6 +117,7 @@ func convQueryAccountBillByMonth(param types.QueryAccountBillRequest, response *
 	}
 	return result
 }
+
 func convQueryAccountBill(response *bssModel.ListCustomerselfResourceRecordsResponse) []types.AccountBillItem {
 	if response == nil {
 		return []types.AccountBillItem{}
@@ -122,12 +143,12 @@ func convQueryAccountBill(response *bssModel.ListCustomerselfResourceRecordsResp
 
 func convSubscriptionType(chargeMode string) cloud.SubscriptionType {
 	switch chargeMode {
+	// 0：按需
+	case "0":
+		return cloud.PostPaid
 	// 1:包年/包月
 	case "1":
 		return cloud.PrePaid
-	// 3：按需
-	case "3":
-		return cloud.PostPaid
 	}
 	return "undefined"
 }
@@ -165,12 +186,128 @@ func convPipCode(pipCode string) types.PipCode {
 	return types.PipCode(pipCode)
 }
 
+func getIpInfoForECS(server ecsModel.ServerDetail) (fixedIps []string, floatingIps []string) {
+	for _, addresses := range server.Addresses {
+		for _, address := range addresses {
+			if address.OSEXTIPStype != nil && address.OSEXTIPStype.Value() == _floating {
+				floatingIps = append(floatingIps, address.Addr)
+			} else {
+				fixedIps = append(fixedIps, address.Addr)
+			}
+		}
+	}
+	return
+}
+
 func (p *HuaweiCloud) DescribeMetricList(ctx context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
-	return types.DescribeMetricList{}, nil
+	request := &cesModel.BatchListMetricDataRequest{}
+	dimensions := make([]cesModel.MetricsDimension, 0)
+	if len(param.Filter.InstanceIds) == 1 {
+		dimensions = append(dimensions, cesModel.MetricsDimension{
+			Name:  _instanceId,
+			Value: param.Filter.InstanceIds[0],
+		})
+	} else {
+		return types.DescribeMetricList{}, fmt.Errorf("filter InstanceIds incorrect")
+	}
+	metric := cesModel.MetricInfo{
+		Namespace:  _namespaceSysECS,
+		MetricName: string(param.MetricName),
+		Dimensions: dimensions,
+	}
+	request.Body = &cesModel.BatchListMetricDataRequestBody{
+		Metrics: []cesModel.MetricInfo{metric},
+		Period:  param.Period,
+		Filter:  _average,
+		From:    param.StartTime.UnixMilli(),
+		To:      param.EndTime.UnixMilli(),
+	}
+	response, err := p.cesClient.BatchListMetricData(request)
+	if err != nil {
+		return types.DescribeMetricList{}, err
+	}
+	ret := types.DescribeMetricList{}
+	if response.HttpStatusCode != http.StatusOK {
+		return ret, fmt.Errorf("httpcode %d", response.HttpStatusCode)
+	}
+	if response.Metrics == nil || len(*response.Metrics) == 0 {
+		return ret, nil
+	}
+	for _, data := range *response.Metrics {
+		var id string
+		if len(*data.Dimensions) > 0 {
+			id = (*data.Dimensions)[0].Value
+		}
+		for _, datapoint := range data.Datapoints {
+			ret.List = append(ret.List, types.MetricSample{
+				Timestamp:  datapoint.Timestamp,
+				InstanceId: id,
+				Average:    *datapoint.Average,
+			})
+		}
+	}
+	return ret, nil
 }
 
 func (p *HuaweiCloud) DescribeRegions(ctx context.Context, param types.DescribeRegionsRequest) (types.DescribeRegions, error) {
-	return types.DescribeRegions{}, nil
+	request := &iamModel.KeystoneListRegionsRequest{}
+	response, err := p.iamClient.KeystoneListRegions(request)
+	if err != nil {
+		return types.DescribeRegions{}, err
+	}
+	ret := types.DescribeRegions{}
+	if response.HttpStatusCode != http.StatusOK {
+		return ret, fmt.Errorf("httpcode %d", response.HttpStatusCode)
+	}
+	if response.Regions == nil || len(*response.Regions) == 0 {
+		return ret, nil
+	}
+	for _, r := range *response.Regions {
+		localName := r.Locales.ZhCn
+		if param.Language == types.RegionLanguageENUS {
+			localName = r.Locales.EnUs
+		}
+		ret.List = append(ret.List, types.ItemRegion{
+			LocalName: localName,
+			RegionId:  r.Id,
+		})
+	}
+	return ret, nil
+}
+
+func (p *HuaweiCloud) DescribeInstances(ctx context.Context, param types.DescribeInstancesRequest) (types.DescribeInstances, error) {
+	request := &ecsModel.ListServersDetailsRequest{}
+	response, err := p.ecsClient.ListServersDetails(request)
+	if err != nil {
+		return types.DescribeInstances{}, err
+	}
+	ret := types.DescribeInstances{}
+	if response.HttpStatusCode != http.StatusOK {
+		return ret, nil
+	}
+	if response.Servers == nil || len(*response.Servers) == 0 {
+		return ret, nil
+	}
+	filterIdMap := make(map[string]bool)
+	for _, id := range param.InstanceIds {
+		filterIdMap[id] = true
+	}
+	for _, server := range *response.Servers {
+		if !filterIdMap[server.Id] && len(filterIdMap) > 0 {
+			continue
+		}
+		fixedIps, floatingIps := getIpInfoForECS(server)
+		chargeMode, _ := server.Metadata[_chargingMode]
+		ret.List = append(ret.List, types.ItemDescribeInstance{
+			InstanceId:       server.Id,
+			InstanceName:     server.Name,
+			SubscriptionType: convSubscriptionType(chargeMode),
+			InnerIpAddress:   fixedIps,
+			PublicIpAddress:  floatingIps,
+		})
+	}
+	ret.TotalCount = len(ret.List)
+	return ret, nil
 }
 
 func (p *HuaweiCloud) DescribeInstanceBill(ctx context.Context, param types.DescribeInstanceBillRequest, isAll bool) (types.DescribeInstanceBill, error) {
@@ -325,9 +462,4 @@ func (p *HuaweiCloud) queryAccountBillByDate(ctx context.Context, param types.Qu
 	}
 
 	return result, nil
-}
-
-func (p *HuaweiCloud) DescribeInstances(ctx context.Context, param types.DescribeInstancesRequest) (types.DescribeInstances, error) {
-	// TODO implement me
-	return types.DescribeInstances{}, nil
 }
