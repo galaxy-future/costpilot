@@ -252,7 +252,7 @@ func (p *AWSCloud) DescribeRegions(ctx context.Context, param types.DescribeRegi
 		for _, regin := range response.Regions {
 			newRegion := types.ItemRegion{
 				RegionId:  aws.StringValue(regin.RegionName),
-				LocalName: _regionLocalName[aws.StringValue(regin.RegionName)],
+				LocalName: aws.StringValue(regin.RegionName),
 			}
 			itemRegions = append(itemRegions, newRegion)
 		}
@@ -329,8 +329,8 @@ func convDescribeInstances(reservations []ec2Types.Reservation, reservedInstance
 			newInstance := types.ItemDescribeInstance{
 				InstanceId:       aws.StringValue(instance.InstanceId),
 				InstanceName:     aws.StringValue(instance.Tags[0].Value),
-				RegionId:         aws.StringValue(instance.Placement.AvailabilityZone),
-				RegionName:       _regionLocalName[region[0:len(region)-1]],
+				RegionId:         region[0 : len(region)-1],
+				RegionName:       region[0 : len(region)-1],
 				SubscriptionType: subscriptionType,
 				PublicIpAddress:  []string{aws.StringValue(instance.PublicIpAddress)},
 				InnerIpAddress:   []string{aws.StringValue(instance.PrivateIpAddress)},
