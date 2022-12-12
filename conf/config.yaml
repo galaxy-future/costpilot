@@ -1,5 +1,5 @@
 cloud_accounts:
-  - provider:  # required :AlibabaCloud | TencentCLoud | AWSCloud | HuaweiCloud
+  - provider:  # required :AlibabaCloud | TencentCloud | AWSCloud | HuaweiCloud
     ak:   # required
     sk:   # required
     region_id:  # required
