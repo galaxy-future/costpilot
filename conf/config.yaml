@@ -1,6 +1,6 @@
 cloud_accounts:
-  - provider:  # required :AlibabaCloud | TencentCloud | AWSCloud | HuaweiCloud
-    ak:   # required
-    sk:   # required
-    region_id:  # required
-    name:  # not required
+  - provider: HuaweiCloud # required :AlibabaCloud | TencentCloud | AWSCloud | HuaweiCloud
+    ak: 498T3TAP6LKO178ESBIW  # required
+    sk: 5bD3ZPkTeaYIJjzlnLcSdVkmgRBIothlcpJ69cP6  # required
+    region_id: 111 # required
+    name: HuaweiCloud # not required

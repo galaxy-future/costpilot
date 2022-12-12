@@ -5,21 +5,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aliyun/alibaba-cloud-sdk-go/sdk"
-	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials"
-	"github.com/aliyun/alibaba-cloud-sdk-go/services/bssopenapi"
+	"github.com/galaxy-future/costpilot/internal/constants/cloud"
+	"github.com/galaxy-future/costpilot/internal/providers"
 	"github.com/galaxy-future/costpilot/internal/providers/types"
 )
 
 var (
-	_AK = "ak_test_123"
-	_SK = "sk_test_123"
-
-	cli *AlibabaCloud
+	cli providers.Provider
 )
 
 func init() {
-	c, err := New(_AK, _SK, "cn-hangzhou")
+	c, err := providers.GetProviderForTest(cloud.AlibabaCloud)
 	if err != nil {
 		return
 	}
@@ -28,15 +24,10 @@ func init() {
 
 func TestAlibabaCloud_QueryAccountBill(t *testing.T) {
 	type fields struct {
-		bssClientOpt *bssopenapi.Client
 	}
 	type args struct {
 		ctx   context.Context
 		param types.QueryAccountBillRequest
-	}
-	bssClientOpt, err := bssopenapi.NewClientWithOptions("cn-beijing", sdk.NewConfig(), credentials.NewAccessKeyCredential(_AK, _SK))
-	if err != nil {
-		t.Fatal(err)
 	}
 	tests := []struct {
 		name    string
@@ -46,10 +37,8 @@ func TestAlibabaCloud_QueryAccountBill(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Monthly-Group_false",
-			fields: fields{
-				bssClientOpt: bssClientOpt,
-			},
+			name:   "Monthly-Group_false",
+			fields: fields{},
 			args: args{
 				ctx: context.Background(),
 				param: types.QueryAccountBillRequest{
@@ -61,10 +50,8 @@ func TestAlibabaCloud_QueryAccountBill(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Monthly-Group_true",
-			fields: fields{
-				bssClientOpt: bssClientOpt,
-			},
+			name:   "Monthly-Group_true",
+			fields: fields{},
 			args: args{
 				param: types.QueryAccountBillRequest{
 					BillingCycle:     "2022-09",
@@ -76,10 +63,8 @@ func TestAlibabaCloud_QueryAccountBill(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Daily-Group_false",
-			fields: fields{
-				bssClientOpt: bssClientOpt,
-			},
+			name:   "Daily-Group_false",
+			fields: fields{},
 			args: args{
 				param: types.QueryAccountBillRequest{
 					BillingCycle: "2022-09",
@@ -91,10 +76,8 @@ func TestAlibabaCloud_QueryAccountBill(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Daily-Group_true",
-			fields: fields{
-				bssClientOpt: bssClientOpt,
-			},
+			name:   "Daily-Group_true",
+			fields: fields{},
 			args: args{
 				param: types.QueryAccountBillRequest{
 					BillingCycle:     "2022-09",
@@ -109,29 +92,20 @@ func TestAlibabaCloud_QueryAccountBill(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &AlibabaCloud{
-				bssClientOpt: tt.fields.bssClientOpt,
-			}
-			got, err := p.QueryAccountBill(tt.args.ctx, tt.args.param)
+			got, err := cli.QueryAccountBill(tt.args.ctx, tt.args.param)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("QueryAccountBill() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			// if !reflect.DeepEqual(got, tt.want) {
-			//	t.Errorf("QueryAccountBill() got = %v, want %v", got, tt.want)
 			t.Logf("QueryAccountBill() got = %+v", got)
 		})
 	}
 }
 
 func TestAlibabaCloud_DescribeMetricList(t *testing.T) {
-	p, err := New(_AK, _SK, "cn-shenzhen")
-	if err != nil {
-		return
-	}
 	startTime, _ := time.Parse("2006-01-02", "2022-11-10")
 	endTime, _ := time.Parse("2006-01-02", "2022-11-11")
-	got, err := p.DescribeMetricList(nil, types.DescribeMetricListRequest{
+	got, err := cli.DescribeMetricList(nil, types.DescribeMetricListRequest{
 		MetricName: types.MetricItemMemoryUsedUtilization,
 		Period:     "86400",
 		StartTime:  startTime,

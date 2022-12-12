@@ -5,14 +5,15 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/galaxy-future/costpilot/internal/config"
+	"github.com/galaxy-future/costpilot/internal/constants/cloud"
+	"github.com/galaxy-future/costpilot/internal/providers/alibaba"
 	"github.com/galaxy-future/costpilot/internal/providers/aws"
 	"github.com/galaxy-future/costpilot/internal/providers/baidu"
 	"github.com/galaxy-future/costpilot/internal/providers/huawei"
 	"github.com/galaxy-future/costpilot/internal/providers/tencent"
-
-	"github.com/galaxy-future/costpilot/internal/constants/cloud"
-	"github.com/galaxy-future/costpilot/internal/providers/alibaba"
 	"github.com/galaxy-future/costpilot/internal/providers/types"
+	"github.com/pkg/errors"
 	"github.com/spf13/cast"
 )
 
@@ -66,4 +67,22 @@ func GetProvider(provider cloud.Provider, ak, sk, regionID string) (Provider, er
 	}
 	clientMap.Store(key, client)
 	return client, nil
+}
+
+func GetProviderForTest(providerType cloud.Provider) (Provider, error) {
+	cfg := config.GetGlobalConfig()
+	_ = config.InitFileConfig("../../conf/config.yaml")
+	cfg = config.GetGlobalConfig()
+
+	errAccountEmpty := errors.New("cloud_accounts config is required")
+	if len(cfg.CloudAccounts) == 0 {
+		return nil, errAccountEmpty
+	}
+	for _, account := range cfg.CloudAccounts {
+		if account.Provider == providerType {
+			return GetProvider(account.Provider, account.AK, account.SK, account.RegionID)
+		}
+	}
+
+	return nil, errAccountEmpty
 }
