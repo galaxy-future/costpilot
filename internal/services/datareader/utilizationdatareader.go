@@ -159,6 +159,7 @@ func (s *UtilizationDataReader) GetDaysMemoryUtilization(ctx context.Context, p 
 			default:
 				res, err := s.GetDailyMemoryUtilization(ctx, p, instanceIds, d)
 				if err != nil {
+					log.Printf("E! GetDailyCpuUtilization [%v], error=[%v]", d, err)
 					return err
 				}
 				log.Printf("I! GetDailyMemoryUtilization [%s]", d)
