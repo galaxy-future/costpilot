@@ -4,19 +4,33 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/galaxy-future/costpilot/internal/providers/types"
 )
 
-var _AK = ""
-var _SK = ""
+var (
+	_AK = ""
+	_SK = ""
+	cli *AWSCloud
+)
+
+func init() {
+	c, err := New(_AK, _SK, "ap-northeast-1")
+	if err != nil {
+		return
+	}
+	cli = c
+}
 
 func TestAWSCloud_QueryAccountBill(t *testing.T) {
 	type args struct {
 		ctx   context.Context
 		param types.QueryAccountBillRequest
 	}
-	awsCloud, err := New(_AK, _SK, "cn-north-1")
+	awsCloud, err := New(_AK, _SK, "ap-northeast-1")
 	if err != nil {
 		t.Errorf("AWSCloud.New error=%v", err)
 	}
@@ -95,4 +109,46 @@ func TestAWSCloud_QueryAccountBill(t *testing.T) {
 			t.Logf("QueryAccountBill() got = %+v", got)
 		})
 	}
+}
+
+func TestAWSCloud_DescribeRegions(t *testing.T) {
+	regions, err := cli.DescribeRegions(context.Background(), types.DescribeRegionsRequest{})
+	t.Log(regions)
+	t.Log(err)
+	assert.Equal(t, len(regions.List), 17)
+}
+
+func TestAWSCloud_DescribeInstances(t *testing.T) {
+	instances, err := cli.DescribeInstances(context.Background(), types.DescribeInstancesRequest{
+		InstanceIds: []string{"i-0b0a8ad4cd000639a"},
+	})
+	t.Log(instances)
+	t.Log(err)
+}
+
+func TestAWSCloud_DescribeMetricList(t *testing.T) {
+	startTime, _ := time.ParseInLocation("2006-01-02", "2022-12-07", time.Local)
+	endTime := startTime.AddDate(0, 0, +1)
+	describeMetricList, err := cli.DescribeMetricList(context.Background(), types.DescribeMetricListRequest{
+		StartTime: startTime,
+		EndTime:   endTime,
+		Period:    "86400",
+		Filter: types.MetricListInstanceFilter{
+			InstanceIds: []string{"i-0b0a8ad4cd000639a"},
+		},
+		MetricName: types.MetricItemCPUUtilization,
+	})
+	t.Log(describeMetricList)
+	t.Log(err)
+	describeMetricList, err = cli.DescribeMetricList(context.Background(), types.DescribeMetricListRequest{
+		StartTime: startTime,
+		EndTime:   endTime,
+		Period:    "86400",
+		Filter: types.MetricListInstanceFilter{
+			InstanceIds: []string{"i-0b0a8ad4cd000639a"},
+		},
+		MetricName: types.MetricItemMemoryUsedUtilization,
+	})
+	t.Log(describeMetricList)
+	t.Log(err)
 }

@@ -271,42 +271,12 @@ func (p *AlibabaCloud) DescribeRegions(_ context.Context, param types.DescribeRe
 		return ret, nil
 	}
 	for _, r := range response.Body.Regions.Region {
-		ret.List = append(ret.List, types.Region{
-			RegionEndpoint: *r.RegionEndpoint,
-			LocalName:      *r.LocalName,
-			RegionId:       *r.RegionId,
+		ret.List = append(ret.List, types.ItemRegion{
+			LocalName: *r.LocalName,
+			RegionId:  *r.RegionId,
 		})
 	}
 	return ret, nil
-}
-
-func (p *AlibabaCloud) DescribeInstanceAttribute(_ context.Context, param types.DescribeInstanceAttributeRequest) (types.DescribeInstanceAttribute, error) {
-	response, err := p.ecsClient.DescribeInstanceAttribute(&ecs.DescribeInstanceAttributeRequest{
-		InstanceId: &param.InstanceId,
-	})
-	if err != nil {
-		return types.DescribeInstanceAttribute{}, err
-	}
-	if *response.StatusCode != http.StatusOK {
-		return types.DescribeInstanceAttribute{}, fmt.Errorf("httpcode %d", *response.StatusCode)
-	}
-	responseBody := response.Body
-
-	return types.DescribeInstanceAttribute{
-		InstanceId:          *responseBody.InstanceId,
-		InstanceName:        *responseBody.InstanceName,
-		HostName:            *responseBody.HostName,
-		Status:              *responseBody.Status,
-		InstanceType:        *responseBody.InstanceType,
-		InstanceNetworkType: *responseBody.InstanceNetworkType,
-		SubscriptionType:    convSubscriptionTypeAliyunToCloud(*responseBody.InstanceChargeType),
-		Memory:              *responseBody.Memory,
-		Cpu:                 *responseBody.Cpu,
-		ImageId:             *responseBody.ImageId,
-		StoppedMode:         *responseBody.StoppedMode,
-		InternetChargeType:  *responseBody.InternetChargeType,
-		RegionId:            *responseBody.RegionId,
-	}, nil
 }
 
 // DescribeInstanceBill 实例账单是根据账单数据拆分生成，一般会有一天延迟。
@@ -386,6 +356,7 @@ func convInstanceBill(respData *bssopenapiV3.DescribeInstanceBillResponseBodyDat
 	}
 	return result
 }
+
 func convSubscriptionTypeAliyunToCloud(subscriptionType string) cloud.SubscriptionType {
 	switch subscriptionType {
 	case "Subscription":
@@ -516,4 +487,9 @@ func convAvailableInstances(respData *bssopenapiV3.QueryAvailableInstancesRespon
 	}
 
 	return result
+}
+
+func (p *AlibabaCloud) DescribeInstances(ctx context.Context, param types.DescribeInstancesRequest) (types.DescribeInstances, error) {
+	// TODO implement me
+	return types.DescribeInstances{}, nil
 }
