@@ -206,26 +206,27 @@ func getIpInfoForECS(server ecsModel.ServerDetail) (fixedIps []string, floatingI
 
 func (p *HuaweiCloud) DescribeMetricList(ctx context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
 	request := &cesModel.BatchListMetricDataRequest{}
-	dimensions := make([]cesModel.MetricsDimension, 0)
-	if len(param.Filter.InstanceIds) == 1 {
-		dimensions = append(dimensions, cesModel.MetricsDimension{
-			Name:  _instanceId,
-			Value: param.Filter.InstanceIds[0],
-		})
-	} else {
-		return types.DescribeMetricList{}, fmt.Errorf("filter InstanceIds for metric incorrect")
+	var metrics []cesModel.MetricInfo
+
+	if len(param.Filter.InstanceIds) == 0 {
+		return types.DescribeMetricList{}, fmt.Errorf("filter InstanceIds empty")
 	}
-	metric := cesModel.MetricInfo{
-		Namespace:  _namespaceSysECS,
-		Dimensions: dimensions,
-	}
-	if hm, ok := huaweiMetric[param.MetricName]; ok {
-		metric.MetricName = hm
-	} else {
+
+	metricName, ok := huaweiMetric[param.MetricName]
+	if !ok {
 		return types.DescribeMetricList{}, fmt.Errorf("collect metric %s not supported for huawei", param.MetricName)
 	}
+
+	for _, i := range param.Filter.InstanceIds {
+		metrics = append(metrics, cesModel.MetricInfo{
+			Namespace:  _namespaceSysECS,
+			Dimensions: []cesModel.MetricsDimension{{Name: _instanceId, Value: i}},
+			MetricName: metricName,
+		})
+	}
+
 	request.Body = &cesModel.BatchListMetricDataRequestBody{
-		Metrics: []cesModel.MetricInfo{metric},
+		Metrics: metrics,
 		Period:  param.Period,
 		Filter:  _average,
 		From:    param.StartTime.UnixMilli(),
@@ -292,7 +293,7 @@ func (p *HuaweiCloud) DescribeInstances(ctx context.Context, param types.Describ
 	}
 	ret := types.DescribeInstances{}
 	if response.HttpStatusCode != http.StatusOK {
-		return ret, nil
+		return ret, fmt.Errorf("httpcode %d", response.HttpStatusCode)
 	}
 	if response.Servers == nil || len(*response.Servers) == 0 {
 		return ret, nil
