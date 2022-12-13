@@ -248,7 +248,7 @@ func (s *UtilizationDataBean) fetchMemoryUtilizationByInstanceIds(ctx context.Co
 	log.Printf("I! fetchMemoryUtilizationByInstanceIds days: %v", days)
 
 	for regionId, instanceList := range s.regionInstancesMap {
-		var ids = make([]string, len(instanceList))
+		var ids = make([]string, 0, len(instanceList))
 		for _, i := range instanceList {
 			ids = append(ids, i.InstanceId)
 		}
