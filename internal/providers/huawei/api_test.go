@@ -218,7 +218,7 @@ func TestHuaweiCloud_DescribeRegions(t *testing.T) {
 
 func TestHuaweiCloud_DescribeInstances(t *testing.T) {
 	got, err := cli.DescribeInstances(nil, types.DescribeInstancesRequest{
-		InstanceIds: []string{"a48e2e4f-4550-42be-99ed-24aba2d1e9ee"},
+		InstanceIds: []string{},
 	})
 	if err != nil {
 		t.Error(err)
@@ -229,11 +229,11 @@ func TestHuaweiCloud_DescribeInstances(t *testing.T) {
 
 func TestHuaweiCloud_DescribeMetricList(t *testing.T) {
 	got, err := cli.DescribeMetricList(nil, types.DescribeMetricListRequest{
-		MetricName: "cpu_util",
-		Period:     "1",
-		StartTime:  time.Now().Add(-time.Minute * 10),
+		MetricName: types.MetricItemCPUUtilization, // "cpu_util",
+		Period:     "300",
+		StartTime:  time.Now().Add(-time.Minute * 60),
 		EndTime:    time.Now(),
-		Filter:     types.MetricListInstanceFilter{InstanceIds: []string{"a48e2e4f-4550-42be-99ed-24aba2d1e9ee"}},
+		Filter:     types.MetricListInstanceFilter{InstanceIds: []string{"2ae7e196-7e54-42fc-99be-e475813ed784"}},
 	})
 	if err != nil {
 		t.Error(err)

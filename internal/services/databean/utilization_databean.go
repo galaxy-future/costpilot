@@ -61,13 +61,18 @@ func (s *UtilizationDataBean) initProvider(a types.CloudAccount) *UtilizationDat
 }
 
 // newRegionProvider create provider by new region
-func (s *UtilizationDataBean) newRegionProvider(regionId string) providers.Provider {
-	var err error
-	p, err := providers.GetProvider(s.cloudAccount.Provider, s.cloudAccount.AK, s.cloudAccount.SK, regionId)
+func (s *UtilizationDataBean) newRegionProvider(regionId string) (p providers.Provider, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			ep := &err
+			*ep = errors.New(fmt.Sprintf("recover from panic for %s, %v", regionId, r))
+		}
+	}()
+	p, err = providers.GetProvider(s.cloudAccount.Provider, s.cloudAccount.AK, s.cloudAccount.SK, regionId)
 	if err != nil {
 		log.Printf("E! newRegionProvider failed: %v\n", err)
 	}
-	return p
+	return p, err
 }
 
 func (s *UtilizationDataBean) initDataReader() {
@@ -87,11 +92,14 @@ func (s *UtilizationDataBean) loadRegionMap(ctx context.Context) error {
 
 func (s *UtilizationDataBean) getAllInstances(ctx context.Context) error {
 	for regionId, _ := range s.regionMap {
-		p := s.newRegionProvider(regionId)
+		p, err := s.newRegionProvider(regionId)
+		if err != nil {
+			log.Printf("E! newRegionProvider for %s, %v", regionId, err)
+			continue
+		}
 		instanceList, err := s.dataReader.GetInstanceByRegionProvider(ctx, p, regionId)
 		if err != nil {
 			log.Printf("E! getAllInstances.GetInstanceByZones:%v", err)
-			return err
 		}
 		if len(instanceList) == 0 {
 			continue
@@ -188,7 +196,11 @@ func (s *UtilizationDataBean) fetchCpuUtilizationByInstanceIds(ctx context.Conte
 		for _, i := range instanceList {
 			ids = append(ids, i.InstanceId)
 		}
-		p := s.newRegionProvider(regionId)
+		p, err := s.newRegionProvider(regionId)
+		if err != nil {
+			log.Printf("E! newRegionProvider for %s, %v", regionId, err)
+			continue
+		}
 		cpuData, err := dataReader.GetDaysCpuUtilization(ctx, p, ids, days...)
 		if err != nil {
 			return err
@@ -252,7 +264,11 @@ func (s *UtilizationDataBean) fetchMemoryUtilizationByInstanceIds(ctx context.Co
 		for _, i := range instanceList {
 			ids = append(ids, i.InstanceId)
 		}
-		p := s.newRegionProvider(regionId)
+		p, err := s.newRegionProvider(regionId)
+		if err != nil {
+			log.Printf("E! newRegionProvider for %s, %v", regionId, err)
+			continue
+		}
 		memoryData, err := s.dataReader.GetDaysMemoryUtilization(ctx, p, ids, days...)
 		if err != nil {
 			return err

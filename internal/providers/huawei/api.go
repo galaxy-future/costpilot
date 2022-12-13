@@ -35,6 +35,11 @@ const (
 	_namespaceSysECS = "SYS.ECS"
 )
 
+var huaweiMetric = map[types.MetricItem]string{
+	types.MetricItemCPUUtilization:        "cpu_util",
+	types.MetricItemMemoryUsedUtilization: "mem_usedPercent",
+}
+
 type HuaweiCloud struct {
 	bssClientOpt *bss.BssClient
 	iamClient    *iam.IamClient
@@ -208,12 +213,16 @@ func (p *HuaweiCloud) DescribeMetricList(ctx context.Context, param types.Descri
 			Value: param.Filter.InstanceIds[0],
 		})
 	} else {
-		return types.DescribeMetricList{}, fmt.Errorf("filter InstanceIds incorrect")
+		return types.DescribeMetricList{}, fmt.Errorf("filter InstanceIds for metric incorrect")
 	}
 	metric := cesModel.MetricInfo{
 		Namespace:  _namespaceSysECS,
-		MetricName: string(param.MetricName),
 		Dimensions: dimensions,
+	}
+	if hm, ok := huaweiMetric[param.MetricName]; ok {
+		metric.MetricName = hm
+	} else {
+		return types.DescribeMetricList{}, fmt.Errorf("collect metric %s not supported for huawei", param.MetricName)
 	}
 	request.Body = &cesModel.BatchListMetricDataRequestBody{
 		Metrics: []cesModel.MetricInfo{metric},
