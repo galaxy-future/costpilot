@@ -33,10 +33,11 @@ const (
 	_instanceId      = "instance_id"
 	_average         = "average"
 	_namespaceSysECS = "SYS.ECS"
+	_namespaceAGTECS = "AGT.ECS"
 )
 
 var huaweiMetric = map[types.MetricItem]string{
-	types.MetricItemCPUUtilization:        "cpu_util",
+	types.MetricItemCPUUtilization:        "cpu_usage",
 	types.MetricItemMemoryUsedUtilization: "mem_usedPercent",
 }
 
@@ -204,6 +205,9 @@ func getIpInfoForECS(server ecsModel.ServerDetail) (fixedIps []string, floatingI
 	return
 }
 
+// DescribeMetricList
+// https://support.huaweicloud.com/usermanual-ecs/ecs_03_1003.html
+// https://support.huaweicloud.com/ces_faq/ces_faq_0040.html
 func (p *HuaweiCloud) DescribeMetricList(ctx context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
 	request := &cesModel.BatchListMetricDataRequest{}
 	var metrics []cesModel.MetricInfo
@@ -219,7 +223,7 @@ func (p *HuaweiCloud) DescribeMetricList(ctx context.Context, param types.Descri
 
 	for _, i := range param.Filter.InstanceIds {
 		metrics = append(metrics, cesModel.MetricInfo{
-			Namespace:  _namespaceSysECS,
+			Namespace:  _namespaceAGTECS,
 			Dimensions: []cesModel.MetricsDimension{{Name: _instanceId, Value: i}},
 			MetricName: metricName,
 		})
