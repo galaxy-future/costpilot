@@ -338,7 +338,6 @@ func (s *UtilizationDataBean) getRecentInstanceListFromLocal(ctx context.Context
 	}
 	vv := v.(data.DailyCpuUtilization)
 	for _, u := range vv.Utilization {
-		fmt.Printf("getRecentInstanceListFromLocal：%v\n", u)
 		key := fmt.Sprintf("%s:%s", s.provider.ProviderType(), u.InstanceId)
 		if d, ok := s.allInstancesMap[u.InstanceId]; ok {
 			s.recentInstancesMap.Store(key, d)
