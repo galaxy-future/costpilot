@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -19,10 +18,11 @@ type Config struct {
 var globalConfig *Config
 
 const (
-	COSTPILOT_PROVIDER  = "COSTPILOT_PROVIDER"
-	COSTPILOT_AK        = "COSTPILOT_AK"
-	COSTPILOT_SK        = "COSTPILOT_SK"
-	COSTPILOT_REGION_ID = "COSTPILOT_REGION_ID"
+	COSTPILOT_PROVIDER   = "COSTPILOT_PROVIDER"
+	COSTPILOT_AK         = "COSTPILOT_AK"
+	COSTPILOT_SK         = "COSTPILOT_SK"
+	COSTPILOT_REGION_ID  = "COSTPILOT_REGION_ID"
+	COSTPILOT_ACCOUNT_ID = "COSTPILOT_ACCOUNT_ID"
 )
 
 func Init() error {
@@ -41,14 +41,16 @@ func InitFromEnvConfig() error {
 	ak := os.Getenv(COSTPILOT_AK)
 	sk := os.Getenv(COSTPILOT_SK)
 	r := os.Getenv(COSTPILOT_REGION_ID)
+	u := os.Getenv(COSTPILOT_ACCOUNT_ID)
 	globalConfig = &Config{
 		CloudAccounts: []types.CloudAccount{
 			{
-				Provider: cloud.Provider(p),
-				AK:       ak,
-				SK:       sk,
-				RegionID: r,
-				Name:     ak,
+				Provider:  cloud.Provider(p),
+				AK:        ak,
+				SK:        sk,
+				RegionID:  r,
+				Name:      ak,
+				AccountID: u,
 			},
 		},
 	}
@@ -78,7 +80,7 @@ func loadConfig(filePath ...string) (*Config, error) {
 		confPath = filePath[0]
 	}
 
-	f, err := ioutil.ReadFile(confPath)
+	f, err := os.ReadFile(confPath)
 	if err != nil {
 		return nil, err
 	}

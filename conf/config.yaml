@@ -4,3 +4,4 @@ cloud_accounts:
     sk:   # required
     region_id:  # required
     name:  # not required
+    account_id:
