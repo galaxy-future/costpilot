@@ -24,6 +24,7 @@ import (
 	iam "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/iam/v3"
 	iamModel "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/iam/v3/model"
 	iamRegion "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/iam/v3/region"
+	cesRegion "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/ces/v1/region"
 )
 
 const (

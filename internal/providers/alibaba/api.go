@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -195,26 +196,40 @@ func (p *AlibabaCloud) DescribeMetricList(_ context.Context, param types.Describ
 		Period:     tea.String(param.Period),
 		StartTime:  tea.String(param.StartTime.Format("2006-01-02T15:04:05Z")),
 		EndTime:    tea.String(param.EndTime.Format("2006-01-02T15:04:05Z")),
+		Length:     tea.String("100"),
 	}
-	response, err := p.cmsClient.DescribeMetricList(request)
-	if err != nil {
-		return types.DescribeMetricList{}, err
-	}
-	if *response.StatusCode != http.StatusOK {
-		return types.DescribeMetricList{}, fmt.Errorf("httpcode %d", *response.StatusCode)
-	}
-	if response.Body == nil || response.Body.Datapoints == nil {
-		return types.DescribeMetricList{}, nil
-	}
-	dataStr := *response.Body.Datapoints
-	var dataList []*Datapoint
-	if err := json.Unmarshal([]byte(dataStr), &dataList); err != nil {
-		return types.DescribeMetricList{}, nil
+	var allDataList []*Datapoint
+	page := 0
+	for {
+		log.Printf("I! Fecth metrics for page[%d]\n", page)
+		response, err := p.cmsClient.DescribeMetricList(request)
+		if err != nil {
+			return types.DescribeMetricList{}, err
+		}
+		if *response.StatusCode != http.StatusOK {
+			return types.DescribeMetricList{}, fmt.Errorf("httpcode %d", *response.StatusCode)
+		}
+		if response.Body == nil || response.Body.Datapoints == nil {
+			return types.DescribeMetricList{}, nil
+		}
+		dataStr := *response.Body.Datapoints
+		var dataList []*Datapoint
+		if err := json.Unmarshal([]byte(dataStr), &dataList); err != nil {
+			return types.DescribeMetricList{}, nil
+		}
+		if len(dataList) > 0 {
+			allDataList = append(allDataList, dataList...)
+		}
+		if response.Body.NextToken == nil {
+			break
+		} else {
+			request.NextToken = tea.String(*response.Body.NextToken)
+			page++
+		}
 	}
 
-	ret := types.DescribeMetricList{List: make([]types.MetricSample, 0, len(dataList))}
-
-	for _, datapoint := range dataList {
+	ret := types.DescribeMetricList{List: make([]types.MetricSample, 0, len(allDataList))}
+	for _, datapoint := range allDataList {
 		d := types.MetricSample{
 			InstanceId: datapoint.InstanceId,
 			Min:        datapoint.Minimum,
@@ -364,7 +379,36 @@ func convSubscriptionTypeCloudToAliyun(st cloud.SubscriptionType) string {
 	}
 }
 
-func (p *AlibabaCloud) QueryAvailableInstances(_ context.Context, param types.QueryAvailableInstancesRequest) (types.QueryAvailableInstances, error) {
+// alicloud: InstanceIDs in QueryAvailableInstancesRequest are max to 100
+func (p *AlibabaCloud) QueryAvailableInstances(ctx context.Context, param types.QueryAvailableInstancesRequest) (types.QueryAvailableInstances, error) {
+	if len(param.InstanceIdList) <= 100 {
+		return p.queryAvailableInstancesByPage(ctx, param)
+	} else {
+		total := len(param.InstanceIdList)
+		var instanceList []types.ItemAvailableInstance
+		for i := 0; i < total; i += 100 {
+			endIdx := i + 100
+			if endIdx > total {
+				endIdx = total
+			}
+			log.Printf("!I GetInstanceList page[%d], for total[%d]", i/100, total)
+			pageResult, err := p.queryAvailableInstancesByPage(ctx, types.QueryAvailableInstancesRequest{
+				RegionId:         param.RegionId,
+				ProductCode:      param.ProductCode,
+				SubscriptionType: param.SubscriptionType,
+				InstanceIdList:   param.InstanceIdList[i:endIdx],
+			})
+			if err != nil {
+				return types.QueryAvailableInstances{}, err
+			}
+			instanceList = append(instanceList, pageResult.List...)
+		}
+		result := types.QueryAvailableInstances{TotalCount: len(instanceList), List: instanceList}
+		return result, nil
+	}
+}
+
+func (p *AlibabaCloud) queryAvailableInstancesByPage(_ context.Context, param types.QueryAvailableInstancesRequest) (types.QueryAvailableInstances, error) {
 	request := &bssopenapiV3.QueryAvailableInstancesRequest{}
 	if len(param.RegionId) > 0 {
 		if len(param.ProductCode) == 0 {
@@ -372,9 +416,15 @@ func (p *AlibabaCloud) QueryAvailableInstances(_ context.Context, param types.Qu
 		}
 		request.Region = tea.String(param.RegionId)
 	}
+
+	if len(param.InstanceIdList) > 100 {
+		return types.QueryAvailableInstances{}, errors.Errorf("InstanceIDs in QueryAvailableInstancesRequest are max to 100, current: %d", len(param.InstanceIdList))
+	}
+
 	if len(param.InstanceIdList) > 0 {
 		request.InstanceIDs = tea.String(strings.Join(param.InstanceIdList, ","))
 	}
+
 	if param.SubscriptionType != "" {
 		st := convSubscriptionTypeCloudToAliyun(param.SubscriptionType)
 		request.SubscriptionType = &st
@@ -395,10 +445,12 @@ func (p *AlibabaCloud) QueryAvailableInstances(_ context.Context, param types.Qu
 		if *response.StatusCode != http.StatusOK {
 			return types.QueryAvailableInstances{}, fmt.Errorf("httpcode %d", *response.StatusCode)
 		}
-		isSuccess := *response.Body.Success
-		if !isSuccess {
+
+		if response.Body.Success == nil || (!*response.Body.Success) {
+			fmt.Printf("QueryAvailableInstances err: %v\n", *response.Body.Message)
 			return types.QueryAvailableInstances{}, fmt.Errorf("QueryAvailableInstances err: %v", *response.Body.Message)
 		}
+
 		respData = response.Body.Data
 		total := respData.TotalCount
 		if len(instanceList) == 0 {
