@@ -65,7 +65,7 @@ func (s *UtilizationDataBean) newRegionProvider(regionId string) (p providers.Pr
 	defer func() {
 		if r := recover(); r != nil {
 			ep := &err
-			*ep = errors.New(fmt.Sprintf("recover from panic for %s, %v", regionId, r))
+			*ep = errors.New(fmt.Sprintf("panic occur, regionid[%s] not support. skip init provider.", regionId))
 		}
 	}()
 	p, err = providers.GetProvider(s.cloudAccount.Provider, s.cloudAccount.AK, s.cloudAccount.SK, regionId)
@@ -94,7 +94,7 @@ func (s *UtilizationDataBean) getAllInstances(ctx context.Context) error {
 	for regionId, _ := range s.regionMap {
 		p, err := s.newRegionProvider(regionId)
 		if err != nil {
-			log.Printf("E! newRegionProvider for %s, %v", regionId, err)
+			log.Printf("W! newRegionProvider for %s failed, %v", regionId, err)
 			continue
 		}
 		instanceList, err := s.dataReader.GetInstanceByRegionProvider(ctx, p, regionId)
