@@ -282,7 +282,7 @@ func (p *AWSCloud) DescribeInstances(ctx context.Context, param types.DescribeIn
 	return types.DescribeInstances{}, err
 }
 
-//Get Reserved Instances
+// Get Reserved Instances
 func (p *AWSCloud) describeReservedInstances(ctx context.Context) (map[string]string, error) {
 	reservedInstances := make(map[string]string, 0)
 	output, err := p.ec2Client.DescribeReservedInstances(ctx, &ec2.DescribeReservedInstancesInput{})
@@ -316,7 +316,7 @@ func convDescribeInstances(reservations []ec2Types.Reservation, reservedInstance
 			}
 			newInstance := types.ItemDescribeInstance{
 				InstanceId:       aws.StringValue(instance.InstanceId),
-				InstanceName:     aws.StringValue(instance.Tags[0].Value),
+				InstanceName:     convInstanceName(instance.Tags),
 				SubscriptionType: subscriptionType,
 				PublicIpAddress:  []string{aws.StringValue(instance.PublicIpAddress)},
 				InnerIpAddress:   []string{aws.StringValue(instance.PrivateIpAddress)},
@@ -328,6 +328,18 @@ func convDescribeInstances(reservations []ec2Types.Reservation, reservedInstance
 		TotalCount: len(awsInstances),
 		List:       awsInstances,
 	}
+}
+
+func convInstanceName(tagSet []ec2Types.Tag) string {
+	if len(tagSet) == 0 {
+		return ""
+	}
+	for _, tag := range tagSet {
+		if *tag.Key == "name" {
+			return *tag.Value
+		}
+	}
+	return ""
 }
 
 func convDescribeMetricListRequest(param types.DescribeMetricListRequest) (*cloudwatch.GetMetricDataInput, map[string]string) {
