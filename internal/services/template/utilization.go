@@ -110,6 +110,9 @@ func (s *UtilizationTemplate) averagingCpuUsedRatio(date tools.BillingDate) stri
 		total float64
 		num   = 0
 	)
+	if s.CpuUtilization == nil { // if is nil
+		return _invalidValue
+	}
 	for _, d := range date.Days {
 		if val, ok := s.CpuUtilization.Load(d); ok {
 			for _, list := range val.([]data.DailyCpuUtilization) {
@@ -132,6 +135,9 @@ func (s *UtilizationTemplate) averagingMemoryUsedRatio(date tools.BillingDate) s
 		total float64
 		num   = 0
 	)
+	if s.MemoryUtilization == nil { // if is nil
+		return _invalidValue
+	}
 	for _, d := range date.Days {
 		if val, ok := s.MemoryUtilization.Load(d); ok {
 			for _, list := range val.([]data.DailyMemoryUtilization) {
@@ -151,6 +157,9 @@ func (s *UtilizationTemplate) averagingMemoryUsedRatio(date tools.BillingDate) s
 
 func (s *UtilizationTemplate) sumSvrNum(date tools.BillingDate) string {
 	var sum int
+	if s.CpuUtilization == nil { // if is nil
+		return _invalidValue
+	}
 	for _, d := range date.Days {
 		if val, ok := s.CpuUtilization.Load(d); ok {
 			for _, list := range val.([]data.DailyCpuUtilization) {
@@ -253,6 +262,9 @@ func (s *UtilizationTemplate) getDailyDistributionByCpuRadio(start, end float64)
 	ret := make([]string, 0, len(dateRange.Days))
 	counter := make(map[string]int)
 	for _, d := range dateRange.Days {
+		if s.CpuUtilization == nil { // if is nil
+			break
+		}
 		if v, ok := s.CpuUtilization.Load(d); ok {
 			list := v.([]data.DailyCpuUtilization)
 			for _, val := range list {
