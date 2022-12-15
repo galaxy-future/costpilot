@@ -198,7 +198,7 @@ func (s *UtilizationDataBean) fetchCpuUtilizationByInstanceIds(ctx context.Conte
 		}
 		p, err := s.newRegionProvider(regionId)
 		if err != nil {
-			log.Printf("E! newRegionProvider for %s, %v", regionId, err)
+			log.Printf("W! newRegionProvider for %s, %v", regionId, err)
 			continue
 		}
 		cpuData, err := dataReader.GetDaysCpuUtilization(ctx, p, ids, days...)
@@ -266,7 +266,7 @@ func (s *UtilizationDataBean) fetchMemoryUtilizationByInstanceIds(ctx context.Co
 		}
 		p, err := s.newRegionProvider(regionId)
 		if err != nil {
-			log.Printf("E! newRegionProvider for %s, %v", regionId, err)
+			log.Printf("W! newRegionProvider for %s, %v", regionId, err)
 			continue
 		}
 		memoryData, err := s.dataReader.GetDaysMemoryUtilization(ctx, p, ids, days...)
