@@ -2,4 +2,3 @@
 output/
 .idea
 *.local
-conf/config.yaml
