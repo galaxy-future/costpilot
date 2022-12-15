@@ -316,7 +316,7 @@ func convDescribeInstances(reservations []ec2Types.Reservation, reservedInstance
 			}
 			newInstance := types.ItemDescribeInstance{
 				InstanceId:       aws.StringValue(instance.InstanceId),
-				InstanceName:     convInstanceName(instance.Tags),
+				InstanceName:     convInstanceName(instance.Tags), // maybe empty
 				SubscriptionType: subscriptionType,
 				PublicIpAddress:  []string{aws.StringValue(instance.PublicIpAddress)},
 				InnerIpAddress:   []string{aws.StringValue(instance.PrivateIpAddress)},
@@ -335,7 +335,7 @@ func convInstanceName(tagSet []ec2Types.Tag) string {
 		return ""
 	}
 	for _, tag := range tagSet {
-		if *tag.Key == "name" {
+		if *tag.Key == "Name" {
 			return *tag.Value
 		}
 	}
