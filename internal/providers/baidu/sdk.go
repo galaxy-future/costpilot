@@ -4,11 +4,11 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"sort"
 	"time"
 )
 
@@ -32,7 +32,7 @@ type QueryParam struct {
 	K, V string
 }
 
-func (c *BCMClient) Send(path string, queryList []QueryParam) (map[string]interface{}, error) {
+func (c *BCMClient) Send(path string, queryList []QueryParam) ([]byte, error) {
 	timeStamp := time.Now().UTC().Format("2006-01-02T15:04:05Z")
 	authStringPrefix := fmt.Sprintf("bce-auth-v1/%s/%s/10000", c.ak, timeStamp)
 	h := hmac.New(sha256.New, []byte(c.sk))
@@ -49,8 +49,8 @@ func (c *BCMClient) Send(path string, queryList []QueryParam) (map[string]interf
 	authorization := authStringPrefix + "/host;x-bce-date/" + signature
 
 	ser := &http.Client{}
-	requrl := fmt.Sprintf("https://%s%s?%s", c.host, path, query)
-	req, err := http.NewRequest("GET", requrl, nil)
+	reqUrl := fmt.Sprintf("https://%s%s?%s", c.host, path, query)
+	req, err := http.NewRequest("GET", reqUrl, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -62,15 +62,11 @@ func (c *BCMClient) Send(path string, queryList []QueryParam) (map[string]interf
 		return nil, err
 	}
 
-	data := make(map[string]interface{})
 	dataByte, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	if err = json.Unmarshal(dataByte, &data); err != nil {
-		return nil, err
-	}
-	return data, nil
+	return dataByte, nil
 }
 
 func (c *BCMClient) buildQueryParams(queryList []QueryParam) string {
@@ -78,8 +74,13 @@ func (c *BCMClient) buildQueryParams(queryList []QueryParam) string {
 	if len(queryList) == 0 {
 		return s
 	}
+
+	params := url.Values{}
 	for _, item := range queryList {
-		s += fmt.Sprintf("&%s=%v", url.QueryEscape(item.K), url.QueryEscape(item.V))
+		params.Add(item.K, item.V)
 	}
-	return s[1:]
+	keys := make([]string, len(params))
+	sort.Strings(keys)
+	query := params.Encode()
+	return query
 }

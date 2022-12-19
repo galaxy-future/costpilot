@@ -18,6 +18,7 @@ const (
 	S3      PipCode = "s3"
 	SLB     PipCode = "slb"
 	CBN     PipCode = "cbn"
+	CDS     PipCode = "cds"
 )
 
 const Undefined = "Undefined"

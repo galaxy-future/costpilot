@@ -3,6 +3,8 @@ package baidu
 import (
 	"fmt"
 	"testing"
+
+	"github.com/galaxy-future/costpilot/internal/providers/types"
 )
 
 func TestBceClient_Send(t *testing.T) {
@@ -31,5 +33,12 @@ func TestBceClient_Send(t *testing.T) {
 	c := NewBCMClient("xx", "xx", "bcm.bj.baidubce.com")
 	path := fmt.Sprintf("/json-api/v1/metricdata/%s/%s/%s", "41aecd6690764a28a3c737fc554f017c", "BCE_BCC", "MemUsedPercent")
 	rsp, err := c.Send(path, params)
+	t.Logf("rsp:%v,err:%v", rsp, err)
+}
+
+func TestBceClient_Bill_Send(t *testing.T) {
+	request := types.QueryAccountBillRequest{Granularity: types.Daily, BillingDate: "2019-07-19"}
+	cloud, _ := New("", "", "bj")
+	rsp, err := cloud.QueryAccountBill(nil, request)
 	t.Logf("rsp:%v,err:%v", rsp, err)
 }
