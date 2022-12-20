@@ -154,7 +154,7 @@ func (s *UtilizationTemplate) sumSvrNum(date tools.BillingDate) string {
 	for _, d := range date.Days {
 		if val, ok := s.CpuUtilization.Load(d); ok {
 			for _, list := range val.([]data.DailyCpuUtilization) {
-				sum += len(list.Utilization)
+				sum += tools.SumByInstanceId(list.Utilization)
 			}
 		}
 	}
