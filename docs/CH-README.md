@@ -49,13 +49,13 @@ CostPilot 是星汉未来基于先进的 FinOps 理念开发的一站式全场�
 * (1) 通过环境变量的方式运行 (此方式仅支持并行分析一个云账户)
     - 注意把 'abc' 替换为自己云账号的 ak/sk
       ```shell
-      docker run --env COSTPILOT_PROVIDER=AlibabaCloud --env COSTPILOT_AK=abc --env COSTPILOT_SK=abc --env COSTPILOT_REGION_ID=cn-beijing -p 8504:8504 --name=costpilot galaxy-future/costpilot
+      docker run --env COSTPILOT_PROVIDER=AlibabaCloud --env COSTPILOT_AK=abc --env COSTPILOT_SK=abc --env COSTPILOT_REGION_ID=cn-beijing -p 8504:8504 --name=costpilot galaxyfuture/costpilot
       ```
 * (2) 通过配置文件的方式运行 (此方式支持并行分析多个云账户)
     - 创建一个新的 config.yaml (填写完配置), 执行下面的 docker 命令(注意替换 '/tmp/config.yaml' 为真实的 config.yaml
       绝对路径)
       ```shell
-      docker run --mount type=bind,source=/tmp/config.yaml,target=/home/tiger/app/conf/config.yaml -p 8504:8504 --name=costpilot galaxy-future/costpilot
+      docker run --mount type=bind,source=/tmp/config.yaml,target=/home/tiger/app/conf/config.yaml -p 8504:8504 --name=costpilot galaxyfuture/costpilot
       ```
 
 #### 4. 效果展示
