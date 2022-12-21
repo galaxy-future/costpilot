@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -20,12 +21,13 @@ var _SK = "SK"
 var _REGION = "cn-north-1"
 var cli *HuaweiCloud
 
-func init() {
+func TestMain(m *testing.M) {
 	c, err := New(_AK, _SK, "cn-north-4")
 	if err != nil {
 		return
 	}
 	cli = c
+	os.Exit(m.Run())
 }
 
 func TestHuaweiCloud_QueryAccountBill(t *testing.T) {

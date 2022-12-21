@@ -65,7 +65,7 @@ func (s *UtilizationDataBean) newRegionProvider(regionId string) (p providers.Pr
 	defer func() {
 		if r := recover(); r != nil {
 			ep := &err
-			*ep = errors.New(fmt.Sprintf("panic occur, regionid[%s] not support. skip init provider.", regionId))
+			*ep = errors.New(fmt.Sprintf("panic occur, regionid[%s] not support. skip", regionId))
 		}
 	}()
 	p, err = providers.GetProvider(s.cloudAccount.Provider, s.cloudAccount.AK, s.cloudAccount.SK, regionId)

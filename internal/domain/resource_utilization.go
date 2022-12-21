@@ -50,8 +50,8 @@ func (s *ResourceUtilizationDomain) GetUtilizationData(ctx context.Context) erro
 		log.Printf("I! start stat %s resouce utilization", a.Name)
 		dailyCpu, dailyMemory, dailyInstances, err := s.GetUtilization(ctx, a)
 		if err != nil {
-			log.Printf("E! get cloud-acount[%v] utilization error = %v", a.Name, err)
-			return err
+			log.Printf("W! get cloud-acount[%v] utilization error = %v, utilization may not display correctly!", a.Name, err)
+			continue
 		}
 		log.Printf("I! end stat %s resouce utilization", a.Name)
 		s.dailyMemoryProviders = append(s.dailyMemoryProviders, dailyMemory)

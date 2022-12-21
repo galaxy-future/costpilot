@@ -2,6 +2,7 @@ package aws
 
 import (
 	"context"
+	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -17,12 +18,13 @@ var (
 	cli *AWSCloud
 )
 
-func init() {
+func TestMain(m *testing.M) {
 	c, err := New(_AK, _SK, "ap-northeast-1")
 	if err != nil {
 		return
 	}
 	cli = c
+	os.Exit(m.Run())
 }
 
 func TestAWSCloud_QueryAccountBill(t *testing.T) {

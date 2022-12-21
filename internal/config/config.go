@@ -89,6 +89,11 @@ func loadConfig(filePath ...string) (*Config, error) {
 	if err = config.verify(); err != nil {
 		return nil, err
 	}
+	for k, v := range config.CloudAccounts {
+		if v.Name == "" {
+			config.CloudAccounts[k].Name = fmt.Sprintf("%s-%s", v.Provider.String(), v.AK)
+		}
+	}
 	log.Println("I! load file config success")
 	return &config, nil
 }
