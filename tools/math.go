@@ -95,3 +95,10 @@ func AddProductBilling(x, y data.ProductBilling) (data.ProductBilling, error) {
 	}
 	return ret, nil
 }
+func SumByInstanceId(utilizations []data.InstanceCpuUtilization) int {
+	temp := make(map[string]bool)
+	for _, v := range utilizations {
+		temp[v.InstanceId] = true
+	}
+	return len(temp)
+}
