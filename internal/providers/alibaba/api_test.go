@@ -2,6 +2,7 @@ package alibaba
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
@@ -18,14 +19,14 @@ var (
 	cli *AlibabaCloud
 )
 
-func init() {
-	c, err := New(_AK, _SK, "cn-hangzhou")
+func TestMain(m *testing.M) {
+	var err error
+	cli, err = New(_AK, _SK, "cn-hangzhou")
 	if err != nil {
-		return
+		panic(err)
 	}
-	cli = c
+	os.Exit(m.Run())
 }
-
 func TestAlibabaCloud_QueryAccountBill(t *testing.T) {
 	type fields struct {
 		bssClientOpt *bssopenapi.Client
@@ -148,17 +149,6 @@ func TestAlibabaCloud_DescribeRegions(t *testing.T) {
 	got, err := cli.DescribeRegions(nil, types.DescribeRegionsRequest{
 		ResourceType: types.ResourceTypeInstance,
 		Language:     types.RegionLanguageZHCN,
-	})
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	t.Log(got)
-}
-
-func TestAlibabaCloud_DescribeInstanceAttribute(t *testing.T) {
-	got, err := cli.DescribeInstanceAttribute(nil, types.DescribeInstanceAttributeRequest{
-		InstanceId: "i-wz9ctvduhhj02x4nc5k7",
 	})
 	if err != nil {
 		t.Error(err)
