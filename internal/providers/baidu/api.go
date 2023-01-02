@@ -7,38 +7,29 @@ import (
 	"strings"
 	"time"
 
-	"github.com/galaxy-future/costpilot/internal/services"
-
-	"github.com/baidubce/bce-sdk-go/services/bcc/api"
-
 	"github.com/baidubce/bce-sdk-go/services/bcc"
+	"github.com/baidubce/bce-sdk-go/services/bcc/api"
 	"github.com/galaxy-future/costpilot/internal/constants/cloud"
 	"github.com/galaxy-future/costpilot/internal/providers/types"
+	"github.com/galaxy-future/costpilot/internal/services"
 	"github.com/pkg/errors"
 )
 
 type BaiduCloud struct {
+	ak        string
 	bccClient *bcc.Client
 	bcmClient *BCMClient
 }
 
 var (
-	endPoints = map[string]string{
-		"bj":  ".bj.baidubce.com",
-		"gz":  ".gz.baidubce.com",
-		"su":  ".su.baidubce.com",
-		"hkg": ".hkg.baidubce.com",
-		"fwh": ".fwh.baidubce.com",
-		"bd":  ".bd.baidubce.com",
-	}
-	metricNameMap = map[types.MetricItem]string{
+	_metricNameMap = map[types.MetricItem]string{
 		types.MetricItemMemUsedPercent: "MemUsedPercent",
 		types.MetricItemCpuIdlePercent: "CpuIdlePercent",
 	}
 )
 
 func New(ak, sk, regionId string) (*BaiduCloud, error) {
-	ep, ok := endPoints[strings.ToLower(regionId)]
+	ep, ok := _endPointMap[strings.ToLower(regionId)]
 	if !ok {
 		return nil, errors.New("regionId error:" + regionId)
 	}
@@ -48,6 +39,7 @@ func New(ak, sk, regionId string) (*BaiduCloud, error) {
 		return nil, err
 	}
 	return &BaiduCloud{
+		ak:        ak,
 		bccClient: bccClient,
 		bcmClient: NewBCMClient(ak, sk, fmt.Sprintf("bcm%s", ep)),
 	}, nil
@@ -65,50 +57,47 @@ func (p *BaiduCloud) QueryAccountBill(ctx context.Context, param types.QueryAcco
 
 // DescribeMetricList
 // 在使用 BCMClient.Send 方法请求时，注意参数顺序，参看 TestBceClient_Send
-func (p *BaiduCloud) DescribeMetricList(_ context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
-	metricName, ok := metricNameMap[param.MetricName]
+// https://cloud.baidu.com/doc/BCM/s/9jwvym3kb
+func (p *BaiduCloud) DescribeMetricList(ctx context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
+	metricName, ok := _metricNameMap[param.MetricName]
 	if !ok {
 		return types.DescribeMetricList{}, errors.New("unknown metric name")
 	}
 	if len(param.Filter.InstanceIds) == 0 {
 		return types.DescribeMetricList{}, errors.New("unknown instance id")
 	}
-	accounts := services.NewAccountService().GetAccounts()
-	if len(accounts) == 0 {
-		return types.DescribeMetricList{}, errors.New("cloud account is not configured")
-	}
-	if accounts[0].Provider != cloud.BaiduCloud {
-		return types.DescribeMetricList{}, errors.New("unknown provider")
-	}
-	params := []QueryParam{
-		{
-			K: "dimensions",
-			V: "InstanceId:" + strings.Join(param.Filter.InstanceIds, ","),
-		},
-		{
-			K: "endTime",
-			V: param.EndTime.Format("2006-01-02T15:04:05Z"),
-		},
-		{
-			K: "periodInSecond",
-			V: param.Period,
-		},
-		{
-			K: "startTime",
-			V: param.StartTime.Format("2006-01-02T15:04:05Z"),
-		},
-		{
-			K: "statistics[]",
-			V: "average,maximum,minimum",
-		},
-	}
-	path := fmt.Sprintf("/json-api/v1/metricdata/%s/%s/%s", accounts[0].AccountID, "BCE_BCC", metricName)
-	response, err := p.bcmClient.Send(path, params)
+	accountId, err := p.getAccountId()
 	if err != nil {
 		return types.DescribeMetricList{}, err
 	}
+	var metricList []types.MetricSample
+	for _, id := range param.Filter.InstanceIds {
+		// 当监控项具备多个维度时使用分号连接，例如dimensionName:dimensionValue;dimensionName:dimensionValue，相同维度只能指定一个维度值
+		queryParam := []QueryParam{
+			{K: "dimensions", V: fmt.Sprintf("InstanceId:%s", id)},
+			{K: "endTime", V: param.EndTime.Format("2006-01-02T15:04:05Z")},
+			{K: "periodInSecond", V: param.Period},
+			{K: "startTime", V: param.StartTime.Format("2006-01-02T15:04:05Z")},
+			{K: "statistics[]", V: "average,maximum,minimum"},
+		}
+		metric, err := p.getMetricByInstanceId(ctx, queryParam, id, metricName, accountId)
+		if err != nil {
+			return types.DescribeMetricList{}, err
+		}
+		metricList = append(metricList, metric...)
+	}
+	return types.DescribeMetricList{List: metricList}, nil
+}
+
+func (p *BaiduCloud) getMetricByInstanceId(_ context.Context, queryParam []QueryParam, instanceId, metricName, accountId string) ([]types.MetricSample, error) {
+	var ret []types.MetricSample
+	path := fmt.Sprintf("/json-api/v1/metricdata/%s/%s/%s", accountId, "BCE_BCC", metricName)
+	response, err := p.bcmClient.Send(path, queryParam)
+	if err != nil {
+		return ret, err
+	}
 	if response["code"] != "OK" {
-		return types.DescribeMetricList{}, fmt.Errorf("%s", response["message"])
+		return ret, fmt.Errorf("%s", response["message"])
 	}
 
 	var dataList []*struct {
@@ -119,45 +108,51 @@ func (p *BaiduCloud) DescribeMetricList(_ context.Context, param types.DescribeM
 	}
 	bytes, err := json.Marshal(response["dataPoints"])
 	if err != nil {
-		return types.DescribeMetricList{}, nil
+		return ret, err
 	}
 	if err = json.Unmarshal(bytes, &dataList); err != nil {
-		return types.DescribeMetricList{}, nil
+		return ret, nil
 	}
 
-	metricList := types.DescribeMetricList{List: make([]types.MetricSample, 0, len(dataList))}
 	for _, datapoint := range dataList {
 		d := types.MetricSample{
-			Min:       datapoint.Minimum,
-			Max:       datapoint.Maximum,
-			Average:   datapoint.Average,
-			Timestamp: datapoint.Timestamp.Unix(),
+			InstanceId: instanceId,
+			Min:        datapoint.Minimum,
+			Max:        datapoint.Maximum,
+			Average:    datapoint.Average,
+			Timestamp:  datapoint.Timestamp.Unix(),
 		}
-		metricList.List = append(metricList.List, d)
+		ret = append(ret, d)
 	}
-	return metricList, nil
+	return ret, nil
+}
+
+func (p *BaiduCloud) getAccountId() (string, error) {
+	accounts := services.NewAccountService().GetAccounts()
+	if len(accounts) == 0 {
+		return "", errors.New("BaiduCloud account id is not configured")
+	}
+	for _, a := range accounts {
+		if a.Provider == cloud.BaiduCloud && a.AK == p.ak {
+			return a.AccountID, nil
+		}
+	}
+
+	return "", errors.New("BaiduCloud account id is not configured")
 }
 
 func (p *BaiduCloud) DescribeRegions(_ context.Context, param types.DescribeRegionsRequest) (types.DescribeRegions, error) {
 	if param.ResourceType == "" {
 		return types.DescribeRegions{}, errors.New("unknown resource type")
 	}
-	args := &api.ListTypeZonesArgs{InstanceType: string(param.ResourceType)}
-	response, err := p.bccClient.ListTypeZones(args)
-	if err != nil {
-		return types.DescribeRegions{}, err
-	}
-	region := types.DescribeRegions{}
-	zoneNames := response.ZoneNames
-	if len(zoneNames) == 0 {
-		return region, nil
-	}
-	for _, z := range zoneNames {
-		region.List = append(region.List, types.ItemRegion{
-			LocalName: z,
+	var regionList []types.ItemRegion
+	for regionId, name := range _regionNameMap {
+		regionList = append(regionList, types.ItemRegion{
+			LocalName: name,
+			RegionId:  regionId,
 		})
 	}
-	return region, nil
+	return types.DescribeRegions{List: regionList}, nil
 }
 
 func (p *BaiduCloud) DescribeInstanceBill(ctx context.Context, param types.DescribeInstanceBillRequest, isAll bool) (types.DescribeInstanceBill, error) {
@@ -180,10 +175,10 @@ func (p *BaiduCloud) DescribeInstances(_ context.Context, param types.DescribeIn
 		if err != nil {
 			return instances, err
 		}
+		items = append(items, convInstance(response.Instances)...)
 		if !response.IsTruncated {
 			break
 		}
-		items = append(items, convInstance(response.Instances)...)
 		listArgs.Marker = response.NextMarker
 	}
 
@@ -197,11 +192,7 @@ func convInstance(instances []api.InstanceModelV3) []types.ItemDescribeInstance 
 		result = append(result, types.ItemDescribeInstance{
 			InstanceId:       item.InstanceId,
 			InstanceName:     item.InstanceName,
-			RegionId:         item.ZoneName,
-			PublicIpAddress:  item.PublicIpAddress,
-			InnerIpAddress:   item.PrivateIpAddress,
 			SubscriptionType: convSubscriptionType(item.PaymentTiming),
-			Status:           string(item.Status),
 		})
 	}
 	return result

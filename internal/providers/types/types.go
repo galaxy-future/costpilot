@@ -139,10 +139,8 @@ type ItemDescribeInstance struct {
 	HostName           string
 	SubscriptionType   cloud.SubscriptionType
 	InternetChargeType string
-	PublicIpAddress    string
-	InnerIpAddress     string
-	Status             string
 }
+
 type DescribeInstances struct {
 	TotalCount int
 	List       []ItemDescribeInstance
