@@ -26,17 +26,6 @@ import (
 	iamRegion "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/iam/v3/region"
 )
 
-const (
-	_bssRegion       = "cn-north-1"
-	_chargingMode    = "charging_mode"
-	_floating        = "floating"
-	_instanceId      = "instance_id"
-	_average         = "average"
-	_namespaceSysECS = "SYS.ECS"
-	_namespaceAGTECS = "AGT.ECS"
-	_maxMetrics      = 500
-)
-
 var huaweiMetric = map[types.MetricItem]string{
 	types.MetricItemCPUUtilization:        "cpu_usage",
 	types.MetricItemMemoryUsedUtilization: "mem_usedPercent",
@@ -207,6 +196,7 @@ func getIpInfoForECS(server ecsModel.ServerDetail) (fixedIps []string, floatingI
 }
 
 // DescribeMetricList
+// https://console.huaweicloud.com/apiexplorer/#/apidebug/CES/doc?api=BatchListMetricData&v=v1
 // https://support.huaweicloud.com/usermanual-ecs/ecs_03_1003.html
 // https://support.huaweicloud.com/ces_faq/ces_faq_0040.html
 func (p *HuaweiCloud) DescribeMetricList(ctx context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
@@ -221,14 +211,17 @@ func (p *HuaweiCloud) DescribeMetricList(ctx context.Context, param types.Descri
 		return types.DescribeMetricList{}, fmt.Errorf("collect metric %s not supported for huawei", param.MetricName)
 	}
 
-	var ret types.DescribeMetricList
+	var (
+		ret           types.DescribeMetricList
+		InstanceIdNum = len(param.Filter.InstanceIds)
+	)
 	for idx, id := range param.Filter.InstanceIds {
 		metrics = append(metrics, cesModel.MetricInfo{
 			Namespace:  _namespaceAGTECS,
 			Dimensions: []cesModel.MetricsDimension{{Name: _instanceId, Value: id}},
 			MetricName: metricName,
 		})
-		if len(metrics) == _maxMetrics || idx == len(param.Filter.InstanceIds)-1 {
+		if len(metrics) == _maxMetricsNum || idx == InstanceIdNum-1 {
 			retMetrics, err := p.queryMetricList(param, metrics)
 			if err != nil {
 				return types.DescribeMetricList{}, err
@@ -250,17 +243,20 @@ func (p *HuaweiCloud) queryMetricList(param types.DescribeMetricListRequest, met
 		From:    param.StartTime.UnixMilli(),
 		To:      param.EndTime.UnixMilli(),
 	}
+
+	var ret []types.MetricSample
+
 	response, err := p.cesClient.BatchListMetricData(request)
 	if err != nil {
-		return nil, err
+		return ret, err
 	}
 	if response.HttpStatusCode != http.StatusOK {
-		return nil, fmt.Errorf("httpcode %d", response.HttpStatusCode)
+		return ret, fmt.Errorf("httpcode %d", response.HttpStatusCode)
 	}
 	if response.Metrics == nil || len(*response.Metrics) == 0 {
-		return nil, nil
+		return ret, nil
 	}
-	var ret []types.MetricSample
+
 	for _, data := range *response.Metrics {
 		var id string
 		if len(*data.Dimensions) > 0 {
