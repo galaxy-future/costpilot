@@ -23,8 +23,8 @@ type BaiduCloud struct {
 
 var (
 	_metricNameMap = map[types.MetricItem]string{
-		types.MetricItemMemUsedPercent: "MemUsedPercent",
-		types.MetricItemCpuIdlePercent: "CpuIdlePercent",
+		types.MetricItemMemoryUsedUtilization: "MemUsedPercent",
+		types.MetricItemCPUUtilization:        "CpuIdlePercent",
 	}
 )
 
@@ -115,6 +115,9 @@ func (p *BaiduCloud) getMetricByInstanceId(_ context.Context, queryParam []Query
 	}
 
 	for _, datapoint := range dataList {
+		if datapoint.Minimum == 0 && datapoint.Maximum == 0 && datapoint.Average == 0 {
+			continue
+		}
 		d := types.MetricSample{
 			InstanceId: instanceId,
 			Min:        datapoint.Minimum,

@@ -18,9 +18,6 @@ const (
 
 	MetricItemCPUUtilization        MetricItem = "cpu.utilization"
 	MetricItemMemoryUsedUtilization MetricItem = "memory.used.utilization"
-
-	MetricItemMemUsedPercent MetricItem = "MemUsedPercent"
-	MetricItemCpuIdlePercent MetricItem = "CpuIdlePercent"
 )
 
 type QueryAccountBillRequest struct {
