@@ -36,26 +36,3 @@ func TestBceClient_Send(t *testing.T) {
 	rsp, err := c.Send(path, params)
 	t.Logf("rsp:%v,err:%v", rsp, err)
 }
-
-func TestMetric(t *testing.T) {
-	startTime := time.Now().AddDate(0, -1, -3)
-	endTime := time.Now().AddDate(0, -1, 0)
-	client, _ := New("", "", "bj")
-	request := types.DescribeMetricListRequest{MetricName: types.MetricItemCpuIdlePercent, StartTime: startTime, EndTime: endTime}
-	metricList, err := client.DescribeMetricList(nil, request)
-	t.Logf("rsp:%v,err:%v", metricList, err)
-}
-
-func TestRegions(t *testing.T) {
-	client, _ := New("", "", "bj")
-	regionsRequest := types.DescribeRegionsRequest{ResourceType: types.ResourceTypeInstance}
-	regions, err := client.DescribeRegions(nil, regionsRequest)
-	t.Logf("rsp:%v,err:%v", regions, err)
-}
-
-func TestInstances(t *testing.T) {
-	client, _ := New("", "", "bj")
-	instancesRequest := types.DescribeInstancesRequest{}
-	instances, err := client.DescribeInstances(nil, instancesRequest)
-	t.Logf("rsp:%v,err:%v", instances, err)
-}

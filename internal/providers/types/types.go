@@ -18,9 +18,6 @@ const (
 
 	MetricItemCPUUtilization        MetricItem = "cpu.utilization"
 	MetricItemMemoryUsedUtilization MetricItem = "memory.used.utilization"
-
-	MetricItemMemUsedPercent MetricItem = "MemUsedPercent"
-	MetricItemCpuIdlePercent MetricItem = "CpuIdlePercent"
 )
 
 type QueryAccountBillRequest struct {
@@ -139,10 +136,8 @@ type ItemDescribeInstance struct {
 	HostName           string
 	SubscriptionType   cloud.SubscriptionType
 	InternetChargeType string
-	PublicIpAddress    string
-	InnerIpAddress     string
-	Status             string
 }
+
 type DescribeInstances struct {
 	TotalCount int
 	List       []ItemDescribeInstance
