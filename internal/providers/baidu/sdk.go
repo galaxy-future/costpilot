@@ -9,22 +9,26 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sort"
+	"strings"
 	"time"
 )
 
 type BCMClient struct {
-	ak   string
-	sk   string
-	host string
-	http *http.Client
+	ak     string
+	sk     string
+	host   string
+	method string
+	http   *http.Client
 }
 
 func NewBCMClient(AK, SK, host string) *BCMClient {
 	return &BCMClient{
-		ak:   AK,
-		sk:   SK,
-		host: host,
-		http: &http.Client{},
+		ak:     AK,
+		sk:     SK,
+		host:   host,
+		method: http.MethodGet,
+		http:   &http.Client{},
 	}
 }
 
@@ -39,8 +43,28 @@ func (c *BCMClient) Send(path string, queryList []QueryParam) (map[string]interf
 	h.Write([]byte(authStringPrefix))
 	signKey := hex.EncodeToString(h.Sum(nil))
 
+	header := map[string]string{
+		"host":       c.host,
+		"x-bce-date": timeStamp,
+	}
+
+	var keys []string
+	for k := range header {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	result := make([]string, 0, len(header))
+	for _, key := range keys {
+		if value, ok := header[key]; ok {
+			tempStr := url.QueryEscape(strings.ToLower(key)) + ":" + url.QueryEscape(value)
+			result = append(result, tempStr)
+		}
+	}
+
 	query := c.buildQueryParams(queryList)
-	canonicalRequest := "GET\n" + path + "\n" + query + "\nhost:" + c.host + "\nx-bce-date:" + url.QueryEscape(timeStamp)
+	canonicalHeaders := strings.Join(result, "\n")
+	canonicalRequest := c.method + "\n" + path + "\n" + query + "\n" + canonicalHeaders
 
 	hs := hmac.New(sha256.New, []byte(signKey))
 	hs.Write([]byte(canonicalRequest))
@@ -49,13 +73,14 @@ func (c *BCMClient) Send(path string, queryList []QueryParam) (map[string]interf
 	authorization := authStringPrefix + "/host;x-bce-date/" + signature
 
 	ser := &http.Client{}
-	requrl := fmt.Sprintf("https://%s%s?%s", c.host, path, query)
-	req, err := http.NewRequest("GET", requrl, nil)
+	requrl := fmt.Sprintf("http://%s%s?%s", c.host, path, query)
+	req, err := http.NewRequest(c.method, requrl, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Host", c.host)
-	req.Header.Set("x-bce-date", timeStamp)
+	for k, v := range header {
+		req.Header.Set(k, v)
+	}
 	req.Header.Set("Authorization", authorization)
 	resp, err := ser.Do(req)
 	if err != nil {
