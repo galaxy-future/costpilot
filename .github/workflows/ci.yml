@@ -1,0 +1,24 @@
+name: Makefile CI
+on:
+  push:
+    branches:
+      - dev
+      - test
+  # all PR will run this ci
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.17.4
+      - name: Run prepare
+        run: make prepare
+      - name: Run check
+        run: make check
+      - name: Run build
+        run: make build

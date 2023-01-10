@@ -50,13 +50,13 @@ To run CostPilot in Docker, you need to install Docker first. For more informati
 * (1) Use environment variables. You can analyze only one cloud account at a time if you use this method.
   - Replace 'abc' with your own AK/SK.
     ```shell
-    docker run --env COSTPILOT_PROVIDER=AlibabaCloud --env COSTPILOT_AK=abc --env COSTPILOT_SK=abc --env COSTPILOT_REGION_ID=cn-beijing -p 8504:8504 --name=costpilot galaxy-future/costpilot
+    docker run --env COSTPILOT_PROVIDER=AlibabaCloud --env COSTPILOT_AK=abc --env COSTPILOT_SK=abc --env COSTPILOT_REGION_ID=cn-beijing -p 8504:8504 --name=costpilot galaxyfuture/costpilot
     ```
 * (2) Use a configuration file. You can analyze multiple cloud accounts at a time if you use this method.
   - Create your own config.yaml file, and then execute the following command. Replace /tmp/config.yaml with the absolute
     path of your config.yaml file.
     ```shell
-    docker run --mount type=bind,source=/tmp/config.yaml,target=/home/tiger/app/conf/config.yaml -p 8504:8504 --name=costpilot galaxy-future/costpilot
+    docker run --mount type=bind,source=/tmp/config.yaml,target=/home/tiger/app/conf/config.yaml -p 8504:8504 --name=costpilot galaxyfuture/costpilot
     ```
 
 #### 4. Sample Result
