@@ -1,3 +1,6 @@
+prepare:
+	go install golang.org/x/tools/cmd/goimports@latest
+
 format:
 	go fmt ./...
 	find . -name '*.go' | grep -Ev 'vendor|thrift_gen' | xargs goimports -w
