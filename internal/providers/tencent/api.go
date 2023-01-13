@@ -2,6 +2,7 @@ package tencent
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -238,16 +239,144 @@ func convCurrency(priceUnit string) (currency string) {
 	return
 }
 
+// DescribeMetricList api doc https://cloud.tencent.com/document/api/248/31014
 func (p *TencentCloud) DescribeMetricList(ctx context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
-	// TODO implement me
-	return types.DescribeMetricList{}, nil
+
+	time.Sleep(500 * time.Millisecond)
+
+	//check undefined type
+	if param.MetricName == types.Undefined {
+		return types.DescribeMetricList{}, errors.New("param 'metricName' undefined")
+	}
+
+	request := monitor.NewGetMonitorDataRequest()
+
+	//time
+	start := param.StartTime.Format(time.RFC3339)
+	end := param.EndTime.Format(time.RFC3339)
+	request.StartTime = &start
+	request.EndTime = &end
+
+	//period
+	period, err := strconv.ParseUint(param.Period, 10, 64)
+	if err != nil {
+		return types.DescribeMetricList{}, err
+	}
+	request.Period = &period
+
+	//instances
+	var instances []*monitor.Instance
+	var dimensions []*monitor.Dimension
+	name := "InstanceId"
+	for _, ins := range param.Filter.InstanceIds {
+
+		dimensions = append(dimensions, &monitor.Dimension{
+			Name:  &name,
+			Value: &ins,
+		})
+
+	}
+	instances = append(instances, &monitor.Instance{
+		Dimensions: dimensions,
+	})
+	request.Instances = instances
+
+	//namespace
+	nameSpace := "QCE/CVM"
+	request.Namespace = &nameSpace
+
+	//metric name
+	var metricName string
+	switch param.MetricName {
+	case types.MetricItemCPUUtilization:
+
+		metricName = "CPUUsage"
+		break
+		//内存使用情况
+	case types.MetricItemMemoryUsedUtilization:
+		metricName = "MemUsage"
+		break
+	}
+	request.MetricName = &metricName
+
+	monitorData, err := p.monitorClient.GetMonitorData(request)
+	if err != nil {
+		return types.DescribeMetricList{}, err
+	}
+	fmt.Println(monitorData)
+
+	//Timestamp         int64	时间戳
+	//InstanceId        string	实例id
+	//Min, Max, Average float64 最小，最大，平均值
+
+	var metricSamples []types.MetricSample
+
+	for _, d := range monitorData.Response.DataPoints {
+
+		//组合时间戳 数据
+		var min float64
+		var max float64
+		var ave float64
+		for index, t := range d.Values {
+
+			ave += *t
+			if index == 0 {
+				min = *t
+				max = *t
+
+				continue
+			}
+
+			if min > *t {
+				min = *t
+			}
+
+			if max < *t {
+				max = *t
+			}
+
+		}
+
+		metricSamples = append(metricSamples, types.MetricSample{
+			Timestamp:  param.StartTime.UnixMilli(),
+			InstanceId: param.Filter.InstanceIds[0],
+			Min:        min,
+			Max:        max,
+			Average:    ave / float64(len(d.Values)),
+		})
+
+	}
+
+	return types.DescribeMetricList{
+		List: metricSamples,
+	}, nil
 }
 
+// DescribeRegions get all available regions of the current account
 func (p *TencentCloud) DescribeRegions(ctx context.Context, param types.DescribeRegionsRequest) (types.DescribeRegions, error) {
-	// TODO implement me
-	return types.DescribeRegions{}, nil
-}
 
+	request := cvm.NewDescribeRegionsRequest()
+	regions, err := p.cvmClient.DescribeRegions(request)
+
+	if err != nil {
+		return types.DescribeRegions{}, err
+	}
+
+	regionSet := regions.Response.RegionSet
+
+	var ItemRegions []types.ItemRegion
+	for _, item := range regionSet {
+		itemRegion := types.ItemRegion{}
+		itemRegion.RegionId = *item.Region
+		itemRegion.LocalName = *item.RegionName
+
+		ItemRegions = append(ItemRegions, itemRegion)
+	}
+
+	return types.DescribeRegions{
+		List: ItemRegions,
+	}, nil
+}
 func (p *TencentCloud) DescribeInstanceBill(ctx context.Context, param types.DescribeInstanceBillRequest, isAll bool) (types.DescribeInstanceBill, error) {
 	return types.DescribeInstanceBill{}, nil
 }
@@ -256,6 +385,76 @@ func (p *TencentCloud) QueryAvailableInstances(ctx context.Context, param types.
 	return types.QueryAvailableInstances{}, nil
 }
 
-func (p *TencentCloud) DescribeInstances(ctx context.Context, param types.DescribeInstancesRequest) (types.DescribeInstances, error) {
-	return types.DescribeInstances{}, nil
+func formatChargeType(t string) cloud.SubscriptionType {
+
+	switch t {
+	case "PREPAID":
+		return cloud.PrePaid
+	case "POSTPAID_BY_HOUR":
+		return cloud.PostPaid
+	default:
+		return cloud.Undefined
+	}
+
+}
+
+// DescribeInstances get available instances of the current region
+
+func (p *TencentCloud) DescribeInstances(_ context.Context, param types.DescribeInstancesRequest) (types.DescribeInstances, error) {
+
+	request := cvm.NewDescribeInstancesRequest()
+
+	var offset int64 = 0
+	var limit int64 = 100
+	var total int64 = 0
+	request.Offset = &offset
+	var instanceSet []*cvm.Instance
+	for true {
+
+		request.Offset = &offset
+		request.Limit = &limit
+		instancesRes, err := p.cvmClient.DescribeInstances(request)
+		if err != nil {
+			return types.DescribeInstances{}, err
+		}
+
+		instanceSet = append(instanceSet, instancesRes.Response.InstanceSet...)
+		instanceSet = instancesRes.Response.InstanceSet
+		total += *instancesRes.Response.TotalCount
+
+		if int64(len(instancesRes.Response.InstanceSet)) < limit {
+			break
+		}
+
+		offset += limit
+
+	}
+
+	var itemDescribeInstances []types.ItemDescribeInstance
+	for _, instance := range instanceSet {
+		var itemDescribeInstance = types.ItemDescribeInstance{
+			InstanceId:         *instance.InstanceId,
+			InstanceName:       *instance.InstanceName,
+			RegionName:         *instance.Placement.Zone,
+			SubscriptionType:   formatChargeType(*instance.InstanceChargeType),
+			InternetChargeType: *instance.InstanceChargeType,
+		}
+
+		var publicIps []string
+		for _, ip := range instance.PublicIpAddresses {
+			publicIps = append(publicIps, *ip)
+		}
+
+		var privateIps []string
+		for _, ip := range instance.PrivateIpAddresses {
+			privateIps = append(privateIps, *ip)
+		}
+
+		itemDescribeInstance.PublicIpAddress = publicIps
+		itemDescribeInstance.InnerIpAddress = privateIps
+
+		itemDescribeInstances = append(itemDescribeInstances, itemDescribeInstance)
+	}
+
+	return types.DescribeInstances{TotalCount: int(total), List: itemDescribeInstances}, nil
 }
