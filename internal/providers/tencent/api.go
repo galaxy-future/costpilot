@@ -239,10 +239,8 @@ func convCurrency(priceUnit string) (currency string) {
 	return
 }
 
-// DescribeMetricList
-// api doc https://cloud.tencent.com/document/api/248/31014
+// DescribeMetricList api doc https://cloud.tencent.com/document/api/248/31014
 func (p *TencentCloud) DescribeMetricList(ctx context.Context, param types.DescribeMetricListRequest) (types.DescribeMetricList, error) {
-	// TODO implement me
 
 	time.Sleep(500 * time.Millisecond)
 
@@ -354,16 +352,10 @@ func (p *TencentCloud) DescribeMetricList(ctx context.Context, param types.Descr
 	}, nil
 }
 
-// DescribeRegions
-//
-//	get all available regions of the current account
-//
-// /*
+// DescribeRegions get all available regions of the current account
 func (p *TencentCloud) DescribeRegions(ctx context.Context, param types.DescribeRegionsRequest) (types.DescribeRegions, error) {
-	// TODO implement me
 
 	request := cvm.NewDescribeRegionsRequest()
-
 	regions, err := p.cvmClient.DescribeRegions(request)
 
 	if err != nil {
@@ -406,21 +398,38 @@ func formatChargeType(t string) cloud.SubscriptionType {
 
 }
 
-// DescribeInstances
-//
-// get available instances of the current region
-//
-// /*
+// DescribeInstances get available instances of the current region
+
 func (p *TencentCloud) DescribeInstances(_ context.Context, param types.DescribeInstancesRequest) (types.DescribeInstances, error) {
 
 	request := cvm.NewDescribeInstancesRequest()
 
-	instances, err := p.cvmClient.DescribeInstances(request)
-	if err != nil {
-		return types.DescribeInstances{}, err
+	var offset int64 = 0
+	var limit int64 = 100
+	var total int64 = 0
+	request.Offset = &offset
+	var instanceSet []*cvm.Instance
+	for true {
+
+		request.Offset = &offset
+		request.Limit = &limit
+		instancesRes, err := p.cvmClient.DescribeInstances(request)
+		if err != nil {
+			return types.DescribeInstances{}, err
+		}
+
+		instanceSet = append(instanceSet, instancesRes.Response.InstanceSet...)
+		instanceSet = instancesRes.Response.InstanceSet
+		total += *instancesRes.Response.TotalCount
+
+		if int64(len(instancesRes.Response.InstanceSet)) < limit {
+			break
+		}
+
+		offset += limit
+
 	}
 
-	instanceSet := instances.Response.InstanceSet
 	var itemDescribeInstances []types.ItemDescribeInstance
 	for _, instance := range instanceSet {
 		var itemDescribeInstance = types.ItemDescribeInstance{
@@ -447,5 +456,5 @@ func (p *TencentCloud) DescribeInstances(_ context.Context, param types.Describe
 		itemDescribeInstances = append(itemDescribeInstances, itemDescribeInstance)
 	}
 
-	return types.DescribeInstances{TotalCount: int(*instances.Response.TotalCount), List: itemDescribeInstances}, nil
+	return types.DescribeInstances{TotalCount: int(total), List: itemDescribeInstances}, nil
 }
